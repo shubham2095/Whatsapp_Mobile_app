@@ -36,6 +36,9 @@ export default function More() {
   const showContacts = tenantUser && can(user, 'contacts.view');
   const showWhatsapp = tenantUser && can(user, 'whatsapp.view');
   const showTemplates = tenantUser && can(user, 'templates.view');
+  const showChatbot = tenantUser && can(user, 'bots.view') && hasFeature(user, 'chatbot');
+  const showAutomations = tenantUser && can(user, 'workflows.view') && hasFeature(user, 'automations');
+  const showSocial = tenantUser && can(user, 'campaigns.view') && hasFeature(user, 'social');
   const showTeam = tenantUser && can(user, 'team.view');
   const showAgents = tenantUser && can(user, 'agents.view');
   const showBilling = tenantUser && can(user, 'billing.view');
@@ -61,6 +64,15 @@ export default function More() {
             </Text>
           </View>
         </Card>
+
+        {showChatbot || showAutomations || showSocial || tenantUser ? (
+          <Card style={{ paddingVertical: spacing.xs }}>
+            {tenantUser ? <Row icon="sparkles-outline" label="Ask AI" onPress={() => router.push('/assistant')} /> : null}
+            {showChatbot ? <Row icon="hardware-chip-outline" label="Chatbots" onPress={() => router.push('/chatbots')} /> : null}
+            {showAutomations ? <Row icon="git-network-outline" label="Automations" onPress={() => router.push('/automations')} /> : null}
+            {showSocial ? <Row icon="share-social-outline" label="Social posts" onPress={() => router.push('/social')} /> : null}
+          </Card>
+        ) : null}
 
         {showTeam || showAgents ? (
           <Card style={{ paddingVertical: spacing.xs }}>

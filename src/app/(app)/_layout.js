@@ -54,6 +54,14 @@ export default function AppLayout() {
           <Stack.Screen name="team-form" options={{ title: 'Team member' }} />
           <Stack.Screen name="agents" options={{ title: 'Agents' }} />
           <Stack.Screen name="agent/[id]" options={{ title: 'Agent' }} />
+          <Stack.Screen name="chatbots" options={{ title: 'Chatbots' }} />
+          <Stack.Screen name="chatbot/[id]" options={{ title: 'Chatbot' }} />
+          <Stack.Screen name="chatbot-form" options={{ title: 'Chatbot' }} />
+          <Stack.Screen name="automations" options={{ title: 'Automations' }} />
+          <Stack.Screen name="automation/[id]" options={{ title: 'Automation' }} />
+          <Stack.Screen name="social" options={{ title: 'Social' }} />
+          <Stack.Screen name="social-post-form" options={{ title: 'New post' }} />
+          <Stack.Screen name="assistant" options={{ title: 'Ask AI' }} />
         </Stack.Protected>
 
         <Stack.Protected guard={planBlocked}>
