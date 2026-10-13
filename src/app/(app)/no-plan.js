@@ -41,6 +41,8 @@ export default function NoPlan() {
       <Banner message={error} />
       {canBuy ? <Button title={expired ? 'Renew plan' : 'View plans'} onPress={() => router.push('/plans')} /> : null}
       <Button title="I have a plan now, refresh" variant={canBuy ? 'outline' : 'primary'} loading={busy} onPress={check} style={{ marginTop: 8 }} />
+      {can(user, 'billing.view') ? <Button title="Billing and invoices" variant="ghost" onPress={() => router.push('/billing')} style={{ marginTop: 8 }} /> : null}
+      <Button title="Contact support" variant="ghost" onPress={() => router.push('/support')} style={{ marginTop: 8 }} />
       <Button title="Sign out" variant="ghost" onPress={logout} style={{ marginTop: 8 }} />
     </Screen>
   );

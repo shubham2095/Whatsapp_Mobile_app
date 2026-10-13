@@ -47,6 +47,12 @@ export const ConversationRow = memo(function ConversationRow({ conversation, onP
           >
             {conversation.last_message_preview || 'No messages yet'}
           </Text>
+          {conversation.assigned_agent ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, maxWidth: 110 }}>
+              <Ionicons name="person" size={11} color={colors.muted} />
+              <Text variant="caption" muted numberOfLines={1}>{conversation.assigned_agent.name}</Text>
+            </View>
+          ) : null}
           {unread ? (
             <View style={{ minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }}>
               <Text variant="caption" style={{ color: '#fff', fontWeight: '700' }}>{conversation.unread_count > 99 ? '99+' : conversation.unread_count}</Text>

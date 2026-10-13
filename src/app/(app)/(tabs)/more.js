@@ -36,6 +36,8 @@ export default function More() {
   const showContacts = tenantUser && can(user, 'contacts.view');
   const showWhatsapp = tenantUser && can(user, 'whatsapp.view');
   const showTemplates = tenantUser && can(user, 'templates.view');
+  const showTeam = tenantUser && can(user, 'team.view');
+  const showAgents = tenantUser && can(user, 'agents.view');
   const showBilling = tenantUser && can(user, 'billing.view');
   const showAnalytics = tenantUser && can(user, 'analytics.view') && hasFeature(user, 'reports');
 
@@ -59,6 +61,13 @@ export default function More() {
             </Text>
           </View>
         </Card>
+
+        {showTeam || showAgents ? (
+          <Card style={{ paddingVertical: spacing.xs }}>
+            {showTeam ? <Row icon="people-circle-outline" label="Team" onPress={() => router.push('/team')} /> : null}
+            {showAgents ? <Row icon="headset-outline" label="Agents" onPress={() => router.push('/agents')} /> : null}
+          </Card>
+        ) : null}
 
         {showBilling ? (
           <Card style={{ paddingVertical: spacing.xs }}>
@@ -87,6 +96,7 @@ export default function More() {
         ) : null}
 
         <Card style={{ paddingVertical: spacing.xs }}>
+          <Row icon="help-buoy-outline" label="Support" onPress={() => router.push('/support')} />
           <Row icon="person-outline" label="Profile" onPress={() => router.push('/profile')} />
           <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
           <Row icon="lock-closed-outline" label="Change password" onPress={() => router.push('/change-password')} />

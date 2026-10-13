@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Pressable, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { ActionSheet, Banner, EmptyState, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { Composer } from '@/features/inbox/Composer';
 import { dismissChatNotifications, setActiveConversation } from '@/features/push/notifications';
 import { ImageViewer } from '@/features/inbox/ImageViewer';
+import { TransferSheet } from '@/features/inbox/TransferSheet';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
 import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
 import { formatDayLabel, isSameDay } from '@/lib/format';
@@ -22,6 +24,14 @@ function HeaderTitle({ name, phone }) {
       <Text numberOfLines={1} style={{ color: '#fff', fontWeight: '700', fontSize: 17 }}>{name}</Text>
       {phone && phone !== name ? <Text numberOfLines={1} variant="caption" style={{ color: '#ffffffcc' }}>{phone}</Text> : null}
     </View>
+  );
+}
+
+function TransferButton({ onPress }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={10} accessibilityRole="button" accessibilityLabel="Transfer chat">
+      <Ionicons name="swap-horizontal" size={24} color="#fff" />
+    </Pressable>
   );
 }
 
@@ -47,6 +57,7 @@ export default function Chat() {
   const now = useNow();
   const [viewerUri, setViewerUri] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [transferOpen, setTransferOpen] = useState(false);
 
   // Suppress banners for this chat while it is on screen and clear any already in the shade.
   useEffect(() => {
@@ -113,7 +124,12 @@ export default function Chat() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.bg }} behavior="padding">
-      <Stack.Screen options={{ headerTitle: () => <HeaderTitle name={name} phone={phone} /> }} />
+      <Stack.Screen
+        options={{
+          headerTitle: () => <HeaderTitle name={name} phone={phone} />,
+          headerRight: () => <TransferButton onPress={() => setTransferOpen(true)} />,
+        }}
+      />
 
       {isError && messages.length === 0 ? (
         <View style={{ flex: 1, padding: spacing.lg }}>
@@ -152,6 +168,7 @@ export default function Chat() {
       )}
 
       <ImageViewer uri={viewerUri} onClose={() => setViewerUri(null)} />
+      <TransferSheet visible={transferOpen} conversationId={id} onClose={() => setTransferOpen(false)} />
       <ActionSheet visible={!!selected && actions.length > 0} actions={actions} onClose={() => setSelected(null)} />
     </KeyboardAvoidingView>
   );

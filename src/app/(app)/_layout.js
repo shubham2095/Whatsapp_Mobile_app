@@ -50,6 +50,10 @@ export default function AppLayout() {
           <Stack.Screen name="bulk/[id]" options={{ title: 'Bulk send' }} />
           <Stack.Screen name="bulk-form" options={{ title: 'New bulk send' }} />
           <Stack.Screen name="analytics" options={{ title: 'Analytics' }} />
+          <Stack.Screen name="team" options={{ title: 'Team' }} />
+          <Stack.Screen name="team-form" options={{ title: 'Team member' }} />
+          <Stack.Screen name="agents" options={{ title: 'Agents' }} />
+          <Stack.Screen name="agent/[id]" options={{ title: 'Agent' }} />
         </Stack.Protected>
 
         <Stack.Protected guard={planBlocked}>
@@ -62,6 +66,9 @@ export default function AppLayout() {
         <Stack.Screen name="wallet" options={{ title: 'Wallet' }} />
         <Stack.Screen name="invoices" options={{ title: 'Invoices' }} />
         <Stack.Screen name="invoice/[id]" options={{ title: 'Invoice' }} />
+        <Stack.Screen name="support" options={{ title: 'Support' }} />
+        <Stack.Screen name="support-form" options={{ title: 'New ticket' }} />
+        <Stack.Screen name="ticket/[id]" options={{ title: 'Ticket' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="change-password" options={{ title: 'Change password' }} />
