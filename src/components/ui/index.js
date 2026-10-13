@@ -8,3 +8,5 @@ export { Avatar } from './Avatar';
 export { EmptyState } from './EmptyState';
 export { Banner } from './Banner';
 export { ActionSheet } from './ActionSheet';
+export { Sheet } from './Sheet';
+export { ChipSelect } from './ChipSelect';

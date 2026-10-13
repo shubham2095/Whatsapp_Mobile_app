@@ -39,6 +39,11 @@ export default function AppLayout() {
         <Stack.Screen name="import-contacts" options={{ title: 'Import contacts' }} />
         <Stack.Screen name="hot-list" options={{ title: 'Hot list' }} />
         <Stack.Screen name="blacklist" options={{ title: 'Black list' }} />
+        <Stack.Screen name="whatsapp" options={{ title: 'WhatsApp numbers' }} />
+        <Stack.Screen name="whatsapp-connect" options={{ title: 'Connect a number' }} />
+        <Stack.Screen name="templates" options={{ title: 'Templates' }} />
+        <Stack.Screen name="template/[id]" options={{ title: 'Template' }} />
+        <Stack.Screen name="template-form" options={{ title: 'Create template' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="change-password" options={{ title: 'Change password' }} />

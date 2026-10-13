@@ -32,7 +32,10 @@ function Row({ icon, label, onPress, danger = false }) {
 export default function More() {
   const { user, logout } = useAuth();
   const { colors, spacing } = useTheme();
-  const showContacts = !user.is_super_admin && can(user, 'contacts.view');
+  const tenantUser = !user.is_super_admin;
+  const showContacts = tenantUser && can(user, 'contacts.view');
+  const showWhatsapp = tenantUser && can(user, 'whatsapp.view');
+  const showTemplates = tenantUser && can(user, 'templates.view');
 
   function confirmLogout() {
     Alert.alert('Sign out', 'Do you want to sign out of Heltog?', [
@@ -54,6 +57,13 @@ export default function More() {
             </Text>
           </View>
         </Card>
+
+        {showWhatsapp || showTemplates ? (
+          <Card style={{ paddingVertical: spacing.xs }}>
+            {showWhatsapp ? <Row icon="logo-whatsapp" label="WhatsApp numbers" onPress={() => router.push('/whatsapp')} /> : null}
+            {showTemplates ? <Row icon="document-text-outline" label="Templates" onPress={() => router.push('/templates')} /> : null}
+          </Card>
+        ) : null}
 
         {showContacts ? (
           <Card style={{ paddingVertical: spacing.xs }}>
