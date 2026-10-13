@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { OfflineScreen } from '@/features/auth/OfflineScreen';
@@ -44,6 +45,13 @@ function Navigator() {
 }
 
 export default function RootLayout() {
+  // Tell React Query when the app is foregrounded: pauses polling in the background and
+  // refetches on return.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => focusManager.setFocused(state === 'active'));
+    return () => sub.remove();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>

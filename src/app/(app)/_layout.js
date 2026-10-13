@@ -25,6 +25,7 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="chat/[id]" options={{ title: 'Chat' }} />
       <Stack.Screen name="profile" options={{ title: 'Profile' }} />
       <Stack.Screen name="change-password" options={{ title: 'Change password' }} />
     </Stack>
