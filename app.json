@@ -16,7 +16,11 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.heltog.mobile"
+      "package": "com.heltog.mobile",
+      "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -45,7 +49,7 @@
         {
           "photosPermission": "Heltog needs access to your photos so you can send them in chats.",
           "cameraPermission": "Heltog needs the camera so you can take photos to send in chats.",
-          "microphonePermission": false
+          "microphonePermission": "Heltog uses the microphone only when you record voice notes."
         }
       ],
       "expo-document-picker",
