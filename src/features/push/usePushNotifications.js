@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { router } from 'expo-router';
-import * as Notifications from 'expo-notifications';
 import { useQueryClient } from '@tanstack/react-query';
+import { Notifications } from './expoNotifications';
 import { registerForPush } from './notifications';
 
 // Backend payload (WhatsAppWebhookService): title = contact name, data = { type, conversation_id }.
@@ -19,26 +19,24 @@ function openChatFrom(response, canViewInbox) {
 /**
  * Mount once inside the authenticated area. Registers the phone for push, keeps the token fresh,
  * refreshes inbox data when a notification arrives, and opens the chat when one is tapped.
+ * Does nothing in Expo Go (where expo-notifications cannot load).
  */
 export function usePushNotifications({ canViewInbox }) {
   const queryClient = useQueryClient();
   const handled = useRef(new Set());
 
   useEffect(() => {
+    if (!Notifications) return undefined;
     registerForPush();
     // Expo rarely rotates tokens; keep the backend in sync when it does.
-    let tokenSub;
-    try {
-      tokenSub = Notifications.addPushTokenListener(() => {
-        registerForPush();
-      });
-    } catch {
-      // Not available in Expo Go on Android; registerForPush reports "unsupported" there.
-    }
-    return () => tokenSub?.remove();
+    const tokenSub = Notifications.addPushTokenListener(() => {
+      registerForPush();
+    });
+    return () => tokenSub.remove();
   }, []);
 
   useEffect(() => {
+    if (!Notifications) return undefined;
     const receivedSub = Notifications.addNotificationReceivedListener(() => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
       queryClient.invalidateQueries({ queryKey: ['messages'] });
@@ -54,12 +52,14 @@ export function usePushNotifications({ canViewInbox }) {
   }, [queryClient, canViewInbox]);
 
   // App launched by tapping a notification while it was closed.
-  const lastResponse = Notifications.useLastNotificationResponse();
   useEffect(() => {
-    if (!lastResponse) return;
-    const id = lastResponse.notification.request.identifier;
-    if (handled.current.has(id)) return;
-    handled.current.add(id);
-    openChatFrom(lastResponse, canViewInbox);
-  }, [lastResponse, canViewInbox]);
+    if (!Notifications) return;
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (!response) return;
+      const id = response.notification.request.identifier;
+      if (handled.current.has(id)) return;
+      handled.current.add(id);
+      openChatFrom(response, canViewInbox);
+    });
+  }, [canViewInbox]);
 }

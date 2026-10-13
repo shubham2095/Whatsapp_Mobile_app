@@ -1,9 +1,9 @@
 import { Platform } from 'react-native';
-import Constants, { ExecutionEnvironment } from 'expo-constants';
+import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import { registerDevice, unregisterDevice } from '@/api/devices';
 import { clearPushToken, getPushToken, savePushToken } from '@/lib/storage';
+import { IN_EXPO_GO, Notifications } from './expoNotifications';
 
 export const CHANNEL_ID = 'messages';
 
@@ -13,7 +13,7 @@ export function setActiveConversation(id) {
   activeConversationId = id;
 }
 
-Notifications.setNotificationHandler({
+Notifications?.setNotificationHandler({
   handleNotification: async (notification) => {
     const inOpenChat = notification.request.content.data?.conversation_id === activeConversationId;
     return {
@@ -24,9 +24,6 @@ Notifications.setNotificationHandler({
     };
   },
 });
-
-// Remote push is not available in Expo Go on Android (SDK 53+); it needs a development build.
-const IN_EXPO_GO = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 async function ensureChannel() {
   if (Platform.OS !== 'android') return;
@@ -39,12 +36,14 @@ async function ensureChannel() {
   });
 }
 
+const unsupported = () => IN_EXPO_GO || !Notifications || !Device.isDevice;
+
 /**
  * Current push state without prompting.
  * -> 'unsupported' (Expo Go / emulator) | 'denied' | 'undetermined' | 'granted'
  */
 export async function getPushStatus() {
-  if (IN_EXPO_GO || !Device.isDevice) return 'unsupported';
+  if (unsupported()) return 'unsupported';
   const { status, canAskAgain } = await Notifications.getPermissionsAsync();
   if (status === 'granted') return 'granted';
   return status === 'denied' && !canAskAgain ? 'denied' : 'undetermined';
@@ -55,7 +54,7 @@ export async function getPushStatus() {
  * Never throws. -> { status: 'registered' | 'denied' | 'unsupported' | 'error', token?, message? }
  */
 export async function registerForPush() {
-  if (IN_EXPO_GO) return { status: 'unsupported', message: 'Push notifications need a development build, not Expo Go.' };
+  if (IN_EXPO_GO || !Notifications) return { status: 'unsupported', message: 'Push notifications need a development build, not Expo Go.' };
   if (!Device.isDevice) return { status: 'unsupported', message: 'Push notifications only work on a physical device.' };
 
   try {
@@ -88,6 +87,7 @@ export async function unregisterFromPush() {
 
 // Removes already-delivered notifications of one chat from the shade (called when the chat opens).
 export async function dismissChatNotifications(conversationId) {
+  if (!Notifications) return;
   try {
     const shown = await Notifications.getPresentedNotificationsAsync();
     await Promise.all(

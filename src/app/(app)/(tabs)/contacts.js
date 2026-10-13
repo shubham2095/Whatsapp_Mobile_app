@@ -1,5 +1,5 @@
-import { ComingSoon } from '@/components/ComingSoon';
+import { ContactsList } from '@/features/contacts/ContactsList';
 
 export default function ContactsTab() {
-  return <ComingSoon title="Contacts" phase={4} icon="people-outline" />;
+  return <ContactsList />;
 }

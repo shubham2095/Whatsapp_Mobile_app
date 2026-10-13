@@ -56,6 +56,12 @@
           "color": "#0e7c7b",
           "defaultChannel": "messages"
         }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Heltog reads your contacts only when you choose to import them as WhatsApp contacts."
+        }
       ]
     ],
     "scheme": "heltog"

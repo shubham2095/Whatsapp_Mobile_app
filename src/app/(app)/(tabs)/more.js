@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Card, Screen, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { roleLabel } from '@/lib/permissions';
+import { can, roleLabel } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
 
 function Row({ icon, label, onPress, danger = false }) {
@@ -32,6 +32,7 @@ function Row({ icon, label, onPress, danger = false }) {
 export default function More() {
   const { user, logout } = useAuth();
   const { colors, spacing } = useTheme();
+  const showContacts = !user.is_super_admin && can(user, 'contacts.view');
 
   function confirmLogout() {
     Alert.alert('Sign out', 'Do you want to sign out of Heltog?', [
@@ -53,6 +54,13 @@ export default function More() {
             </Text>
           </View>
         </Card>
+
+        {showContacts ? (
+          <Card style={{ paddingVertical: spacing.xs }}>
+            <Row icon="flame-outline" label="Hot list" onPress={() => router.push('/hot-list')} />
+            <Row icon="ban-outline" label="Black list" onPress={() => router.push('/blacklist')} />
+          </Card>
+        ) : null}
 
         <Card style={{ paddingVertical: spacing.xs }}>
           <Row icon="person-outline" label="Profile" onPress={() => router.push('/profile')} />

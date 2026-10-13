@@ -34,6 +34,11 @@ export default function AppLayout() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="chat/[id]" options={{ title: 'Chat' }} />
+        <Stack.Screen name="contact/[id]" options={{ title: 'Contact' }} />
+        <Stack.Screen name="contact-form" options={{ title: 'Contact' }} />
+        <Stack.Screen name="import-contacts" options={{ title: 'Import contacts' }} />
+        <Stack.Screen name="hot-list" options={{ title: 'Hot list' }} />
+        <Stack.Screen name="blacklist" options={{ title: 'Black list' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="change-password" options={{ title: 'Change password' }} />
