@@ -56,6 +56,7 @@ export default function More() {
 
         <Card style={{ paddingVertical: spacing.xs }}>
           <Row icon="person-outline" label="Profile" onPress={() => router.push('/profile')} />
+          <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
           <Row icon="lock-closed-outline" label="Change password" onPress={() => router.push('/change-password')} />
         </Card>
 

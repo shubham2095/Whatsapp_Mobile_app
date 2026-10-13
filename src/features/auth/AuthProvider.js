@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as authApi from '@/api/auth';
 import { setUnauthorizedHandler } from '@/api/client';
+import { unregisterFromPush } from '@/features/push/notifications';
 import { clearToken, getToken, saveToken } from '@/lib/storage';
 
 const AuthContext = createContext(null);
@@ -92,6 +93,8 @@ export function AuthProvider({ children }) {
       login: async (email, password) => startSession(await authApi.login(email.trim(), password)),
       register: async (body) => startSession(await authApi.register(body)),
       logout: async () => {
+        // Stop pushes to this phone while the session token is still valid.
+        await unregisterFromPush();
         try {
           await authApi.logout();
         } catch {}

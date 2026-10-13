@@ -5,6 +5,7 @@ import * as Clipboard from 'expo-clipboard';
 import { ActionSheet, Banner, EmptyState, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { Composer } from '@/features/inbox/Composer';
+import { dismissChatNotifications, setActiveConversation } from '@/features/push/notifications';
 import { ImageViewer } from '@/features/inbox/ImageViewer';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
 import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
@@ -46,6 +47,14 @@ export default function Chat() {
   const now = useNow();
   const [viewerUri, setViewerUri] = useState(null);
   const [selected, setSelected] = useState(null);
+
+  // Suppress banners for this chat while it is on screen and clear any already in the shade.
+  useEffect(() => {
+    if (!id) return undefined;
+    setActiveConversation(id);
+    dismissChatNotifications(id);
+    return () => setActiveConversation(null);
+  }, [id]);
 
   // Opening the chat (and any new inbound message while it is open) marks it read.
   const latestInboundId = messages.find((m) => m.direction === 'inbound')?.id;
