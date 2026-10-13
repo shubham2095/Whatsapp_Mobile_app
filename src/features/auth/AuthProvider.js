@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as authApi from '@/api/auth';
 import { setUnauthorizedHandler } from '@/api/client';
+import { clearBillingDetails } from '@/features/billing/billingDetails';
 import { unregisterFromPush } from '@/features/push/notifications';
 import { clearToken, getToken, saveToken } from '@/lib/storage';
 
@@ -19,6 +20,7 @@ export function AuthProvider({ children }) {
 
   const endSession = useCallback(async () => {
     await clearToken();
+    await clearBillingDetails(); // invoice name/address belong to the signed-out user
     queryClient.clear();
     setState({ status: 'guest', user: null });
   }, [queryClient]);

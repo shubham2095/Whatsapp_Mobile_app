@@ -36,6 +36,7 @@ export default function More() {
   const showContacts = tenantUser && can(user, 'contacts.view');
   const showWhatsapp = tenantUser && can(user, 'whatsapp.view');
   const showTemplates = tenantUser && can(user, 'templates.view');
+  const showBilling = tenantUser && can(user, 'billing.view');
   const showAnalytics = tenantUser && can(user, 'analytics.view') && hasFeature(user, 'reports');
 
   function confirmLogout() {
@@ -58,6 +59,12 @@ export default function More() {
             </Text>
           </View>
         </Card>
+
+        {showBilling ? (
+          <Card style={{ paddingVertical: spacing.xs }}>
+            <Row icon="card-outline" label="Billing and plan" onPress={() => router.push('/billing')} />
+          </Card>
+        ) : null}
 
         {showAnalytics ? (
           <Card style={{ paddingVertical: spacing.xs }}>
