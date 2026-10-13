@@ -62,7 +62,8 @@
         {
           "contactsPermission": "Heltog reads your contacts only when you choose to import them as WhatsApp contacts."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "heltog"
   }

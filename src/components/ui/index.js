@@ -10,3 +10,5 @@ export { Banner } from './Banner';
 export { ActionSheet } from './ActionSheet';
 export { Sheet } from './Sheet';
 export { ChipSelect } from './ChipSelect';
+export { ProgressBar } from './ProgressBar';
+export { StatCard } from './StatCard';

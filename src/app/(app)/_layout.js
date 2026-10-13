@@ -44,6 +44,11 @@ export default function AppLayout() {
         <Stack.Screen name="templates" options={{ title: 'Templates' }} />
         <Stack.Screen name="template/[id]" options={{ title: 'Template' }} />
         <Stack.Screen name="template-form" options={{ title: 'Create template' }} />
+        <Stack.Screen name="campaign/[id]" options={{ title: 'Campaign' }} />
+        <Stack.Screen name="campaign-form" options={{ title: 'New campaign' }} />
+        <Stack.Screen name="bulk/[id]" options={{ title: 'Bulk send' }} />
+        <Stack.Screen name="bulk-form" options={{ title: 'New bulk send' }} />
+        <Stack.Screen name="analytics" options={{ title: 'Analytics' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
         <Stack.Screen name="change-password" options={{ title: 'Change password' }} />
