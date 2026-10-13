@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Heltog",
-    "slug": "heltog-mobile",
+    "slug": "atul",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -20,6 +20,14 @@
       "blockedPermissions": [
         "android.permission.WRITE_CONTACTS",
         "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
       ]
     },
     "web": {
@@ -69,6 +77,13 @@
       ],
       "@react-native-community/datetimepicker"
     ],
-    "scheme": "heltog"
+    "scheme": "heltog",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "841a8d92-d48e-4081-8b1d-bbf122792052"
+      }
+    },
+    "owner": "atul9758s-team"
   }
 }
