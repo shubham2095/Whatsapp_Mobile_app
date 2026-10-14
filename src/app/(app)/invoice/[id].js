@@ -1,9 +1,11 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Share, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Badge, Banner, Button, Card, Screen, Text } from '@/components/ui';
 import { useInvoices } from '@/features/billing/hooks';
+import { renderInvoiceHtml } from '@/features/billing/invoiceHtml';
 import { formatMinor } from '@/features/billing/planMeta';
+import { sharePdf } from '@/lib/exportFile';
 import { useTheme } from '@/theme/ThemeProvider';
 
 function Row({ label, value, strong }) {
@@ -21,6 +23,8 @@ export default function InvoiceDetail() {
   const { id } = useLocalSearchParams();
   const { colors, spacing } = useTheme();
   const { data, isLoading, isError, error, hasNextPage, isFetchingNextPage, fetchNextPage } = useInvoices();
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfError, setPdfError] = useState(null);
   const invoice = useMemo(() => data?.pages.flatMap((p) => p.invoices).find((i) => i.id === id), [data, id]);
 
   useEffect(() => {
@@ -35,6 +39,18 @@ export default function InvoiceDetail() {
   const seller = meta.seller ?? {};
   const customer = meta.customer ?? {};
   const period = meta.period_start && meta.period_end ? `${meta.period_start} to ${meta.period_end}` : null;
+
+  async function downloadPdf() {
+    setPdfBusy(true);
+    setPdfError(null);
+    try {
+      await sharePdf(`invoice-${invoice.number}`, renderInvoiceHtml(invoice));
+    } catch (e) {
+      setPdfError(e.message || 'Could not create the PDF.');
+    } finally {
+      setPdfBusy(false);
+    }
+  }
 
   async function share() {
     const lines = [
@@ -92,7 +108,9 @@ export default function InvoiceDetail() {
           {customer.gstin ? <Text variant="small" muted>GSTIN {customer.gstin}</Text> : null}
         </Card>
 
-        <Button title="Share invoice summary" variant="outline" onPress={share} />
+        <Banner message={pdfError} />
+        <Button title="Download PDF" loading={pdfBusy} onPress={downloadPdf} />
+        <Button title="Share as text" variant="outline" onPress={share} />
       </View>
     </Screen>
   );

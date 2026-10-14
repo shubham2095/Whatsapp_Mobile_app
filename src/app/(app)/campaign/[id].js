@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Badge, Banner, Button, Card, ProgressBar, Text } from '@/components/ui';
@@ -11,6 +11,7 @@ import {
   useStartCampaign,
 } from '@/features/campaigns/hooks';
 import { STATUS_TONE, doneCount, pct } from '@/features/campaigns/meta';
+import { shareCampaignReport } from '@/features/campaigns/report';
 import { formatListTime } from '@/lib/format';
 import { can } from '@/lib/permissions';
 import { displayPhone } from '@/lib/phone';
@@ -40,6 +41,7 @@ export default function CampaignDetail() {
   const recipients = useMemo(() => query.data?.pages.flatMap((p) => p.campaign_contacts) ?? [], [query.data]);
   const total = query.data?.pages[0]?.meta.total ?? 0;
   const canManage = can(user, 'whatsapp.manage');
+  const [exporting, setExporting] = useState(false);
 
   if (query.isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
   if (query.isError && !campaign) {
@@ -100,6 +102,22 @@ export default function CampaignDetail() {
         {campaign.started_at ? <Text variant="caption" muted>Started {formatListTime(campaign.started_at)}</Text> : null}
         {campaign.completed_at ? <Text variant="caption" muted>Finished {formatListTime(campaign.completed_at)}</Text> : null}
       </Card>
+
+      <Button
+        title="Download report (CSV)"
+        variant="outline"
+        loading={exporting}
+        onPress={async () => {
+          setExporting(true);
+          try {
+            await shareCampaignReport(campaign);
+          } catch (e) {
+            Alert.alert('Could not create the report', e.message);
+          } finally {
+            setExporting(false);
+          }
+        }}
+      />
 
       {canManage ? (
         <View style={{ gap: spacing.sm }}>

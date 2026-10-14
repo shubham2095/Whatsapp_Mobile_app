@@ -5,19 +5,23 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { DateTimeField } from '@/components/DateTimeField';
-import { Banner, Button, CheckList, Input, Screen, Text } from '@/components/ui';
+import { Banner, Button, CheckList, ChipSelect, Input, Screen, Text } from '@/components/ui';
 import { useCreatePost, usePublishPost, useSocialConnection } from '@/features/automation/hooks';
 import { formatFileSize } from '@/lib/format';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const MAX_BYTES = 200 * 1024 * 1024; // the backend accepts up to 200 MB
+const HTTPS_URL = /^https:\/\/\S+$/i;
+const IMAGE_URL = /^https:\/\/\S+\.(jpe?g|png|webp)(\?\S*)?$/i; // links we can preview
 
 export default function SocialPostForm() {
   const { colors, radius, spacing } = useTheme();
   const connection = useSocialConnection();
   const create = useCreatePost();
   const publish = usePublishPost();
+  const [source, setSource] = useState('upload'); // upload | link
   const [media, setMedia] = useState(null);
+  const [mediaUrl, setMediaUrl] = useState('');
   const [caption, setCaption] = useState('');
   const [targets, setTargets] = useState(['facebook']);
   const [when, setWhen] = useState(null);
@@ -46,13 +50,15 @@ export default function SocialPostForm() {
   // mode: 'publish' (post immediately) | 'save' (draft, or scheduled when a time is set)
   async function submit(mode) {
     setError(null);
-    if (!media) return setError('Choose a photo or video first.');
+    const usingLink = source === 'link';
+    if (usingLink && !HTTPS_URL.test(mediaUrl.trim())) return setError('Paste a public https link to the photo or video.');
+    if (!usingLink && !media) return setError('Choose a photo or video first.');
     if (targets.length === 0) return setError('Choose at least one place to post.');
     if (when && when.getTime() <= Date.now()) return setError('Pick a time in the future.');
 
     try {
       setStep('uploading');
-      const res = await create.mutateAsync({ caption: caption.trim() || undefined, image: media, targets, scheduledAt: when ? when.toISOString() : undefined });
+      const res = await create.mutateAsync({ caption: caption.trim() || undefined, image: usingLink ? undefined : media, imageUrl: usingLink ? mediaUrl.trim() : undefined, targets, scheduledAt: when ? when.toISOString() : undefined });
       if (mode === 'publish') {
         setStep('publishing');
         const out = await publish.mutateAsync(res.post.id);
@@ -74,7 +80,14 @@ export default function SocialPostForm() {
     <Screen scroll edges={['bottom']}>
       <Banner message={error} />
 
-      {media ? (
+      <ChipSelect options={[{ value: 'upload', label: 'Upload' }, { value: 'link', label: 'Paste link' }]} value={source} onChange={setSource} />
+
+      {source === 'link' ? (
+        <>
+          <Input label="Photo or video link" value={mediaUrl} onChangeText={setMediaUrl} autoCapitalize="none" keyboardType="url" autoCorrect={false} placeholder="https://example.com/photo.jpg" />
+          {IMAGE_URL.test(mediaUrl.trim()) ?<Image source={{ uri: mediaUrl.trim() }} contentFit="cover" style={{ height: 200, borderRadius: radius.md, marginBottom: spacing.md }} /> : null}
+        </>
+      ) : media ? (
         <View style={{ marginBottom: spacing.md, gap: spacing.sm }}>
           {media.isVideo ? (
             <View style={{ height: 160, borderRadius: radius.md, backgroundColor: colors.chipBg, alignItems: 'center', justifyContent: 'center' }}>

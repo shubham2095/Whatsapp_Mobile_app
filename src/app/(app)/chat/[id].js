@@ -10,6 +10,7 @@ import { dismissChatNotifications, setActiveConversation } from '@/features/push
 import { ImageViewer } from '@/features/inbox/ImageViewer';
 import { TransferSheet } from '@/features/inbox/TransferSheet';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
+import { MessageInfoSheet } from '@/features/inbox/MessageInfoSheet';
 import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
 import { formatDayLabel, isSameDay } from '@/lib/format';
 import { can } from '@/lib/permissions';
@@ -58,6 +59,7 @@ export default function Chat() {
   const [viewerUri, setViewerUri] = useState(null);
   const [selected, setSelected] = useState(null);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [infoFor, setInfoFor] = useState(null);
 
   // Suppress banners for this chat while it is on screen and clear any already in the shade.
   useEffect(() => {
@@ -87,6 +89,10 @@ export default function Chat() {
   const canDelete = can(user, 'whatsapp.manage');
 
   const actions = [];
+  if (selected) {
+    const target = selected;
+    actions.push({ label: 'Message info', icon: 'information-circle-outline', onPress: () => setInfoFor(target) });
+  }
   if (selected?.body) {
     actions.push({ label: 'Copy text', icon: 'copy-outline', onPress: () => Clipboard.setStringAsync(selected.body) });
   }
@@ -168,6 +174,7 @@ export default function Chat() {
       )}
 
       <ImageViewer uri={viewerUri} onClose={() => setViewerUri(null)} />
+      <MessageInfoSheet message={infoFor} onClose={() => setInfoFor(null)} />
       <TransferSheet visible={transferOpen} conversationId={id} onClose={() => setTransferOpen(false)} />
       <ActionSheet visible={!!selected && actions.length > 0} actions={actions} onClose={() => setSelected(null)} />
     </KeyboardAvoidingView>

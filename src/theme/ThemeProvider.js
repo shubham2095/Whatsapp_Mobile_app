@@ -1,11 +1,31 @@
-import { createContext, useContext, useMemo } from 'react';
-import { useColorScheme } from 'react-native';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Appearance, useColorScheme } from 'react-native';
+import { getThemePreference, saveThemePreference } from '@/lib/storage';
 import { darkColors, lightColors, radius, spacing, fontSize } from './tokens';
 
 const ThemeContext = createContext(null);
 
+// preference: 'system' (follow the phone) | 'light' | 'dark'
+const apply = (preference) => Appearance.setColorScheme(preference === 'system' ? null : preference);
+
 export function ThemeProvider({ children }) {
   const scheme = useColorScheme();
+  const [preference, setPreferenceState] = useState('system');
+
+  // Restore the saved choice once; Appearance then drives useColorScheme for the whole app.
+  useEffect(() => {
+    getThemePreference().then((saved) => {
+      setPreferenceState(saved);
+      apply(saved);
+    });
+  }, []);
+
+  const setPreference = useCallback((next) => {
+    setPreferenceState(next);
+    apply(next);
+    saveThemePreference(next);
+  }, []);
+
   const value = useMemo(
     () => ({
       isDark: scheme === 'dark',
@@ -13,8 +33,10 @@ export function ThemeProvider({ children }) {
       radius,
       spacing,
       fontSize,
+      preference,
+      setPreference,
     }),
-    [scheme],
+    [scheme, preference, setPreference],
   );
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

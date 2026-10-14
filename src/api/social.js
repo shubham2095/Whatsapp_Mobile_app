@@ -11,14 +11,16 @@ export const disconnect = () => request('/social/connection', { method: 'DELETE'
 // -> { posts: [{ id, caption, image_url, media_type, targets, status, results, scheduled_at, published_at, created_at }] }
 export const listPosts = () => request('/social/posts');
 
-// image: { uri, name, mimeType } (photo or video up to 200 MB). targets: ['facebook', 'instagram'].
+// Media: either image { uri, name, mimeType } (photo or video up to 200 MB) or imageUrl (a public link).
+// targets: ['facebook', 'instagram'].
 // scheduled_at: ISO string in the future, or omitted for a draft.
-export function createPost({ caption, image, targets, scheduledAt }) {
+export function createPost({ caption, image, imageUrl, targets, scheduledAt }) {
   const form = new FormData();
   if (caption) form.append('caption', caption);
   targets.forEach((t) => form.append('targets[]', t));
   if (scheduledAt) form.append('scheduled_at', scheduledAt);
-  form.append('image', { uri: image.uri, name: image.name, type: image.mimeType });
+  if (image) form.append('image', { uri: image.uri, name: image.name, type: image.mimeType });
+  else form.append('image_url', imageUrl);
   return request('/social/posts', { method: 'POST', body: form, multipart: true });
 }
 

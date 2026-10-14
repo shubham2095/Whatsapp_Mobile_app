@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar, Card, Screen, Text } from '@/components/ui';
+import { ActionSheet, Avatar, Card, Screen, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { can, hasFeature, roleLabel } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -31,7 +32,8 @@ function Row({ icon, label, onPress, danger = false }) {
 // Menu for everything that is not a tab. Feature entries are added here phase by phase.
 export default function More() {
   const { user, logout } = useAuth();
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, preference, setPreference } = useTheme();
+  const [themeMenu, setThemeMenu] = useState(false);
   const tenantUser = !user.is_super_admin;
   const showContacts = tenantUser && can(user, 'contacts.view');
   const showWhatsapp = tenantUser && can(user, 'whatsapp.view');
@@ -116,6 +118,7 @@ export default function More() {
         <Card style={{ paddingVertical: spacing.xs }}>
           <Row icon="help-buoy-outline" label="Support" onPress={() => router.push('/support')} />
           <Row icon="person-outline" label="Profile" onPress={() => router.push('/profile')} />
+          <Row icon="contrast-outline" label={`Appearance: ${preference === 'system' ? 'Same as phone' : preference === 'dark' ? 'Dark' : 'Light'}`} onPress={() => setThemeMenu(true)} />
           <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
           <Row icon="lock-closed-outline" label="Change password" onPress={() => router.push('/change-password')} />
         </Card>
@@ -124,6 +127,16 @@ export default function More() {
           <Row icon="log-out-outline" label="Sign out" onPress={confirmLogout} danger />
         </Card>
       </View>
+      <ActionSheet
+        visible={themeMenu}
+        title="Appearance"
+        onClose={() => setThemeMenu(false)}
+        actions={[
+          { label: 'Same as phone', icon: preference === 'system' ? 'checkmark' : 'phone-portrait-outline', onPress: () => setPreference('system') },
+          { label: 'Light', icon: preference === 'light' ? 'checkmark' : 'sunny-outline', onPress: () => setPreference('light') },
+          { label: 'Dark', icon: preference === 'dark' ? 'checkmark' : 'moon-outline', onPress: () => setPreference('dark') },
+        ]}
+      />
     </Screen>
   );
 }

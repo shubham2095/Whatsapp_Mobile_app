@@ -10,15 +10,20 @@ export function contactLabel(conversation) {
   return c?.name || c?.phone || c?.wa_id || 'Unknown';
 }
 
-export const ConversationRow = memo(function ConversationRow({ conversation, onPress }) {
+// Long-press pins or unpins the chat (pins are kept on this phone, like the web app's sticky chats).
+export const ConversationRow = memo(function ConversationRow({ conversation, onPress, onLongPress, pinned = false }) {
   const { colors, spacing } = useTheme();
   const unread = conversation.unread_count > 0;
   const name = contactLabel(conversation);
+  const contact = conversation.contact;
 
   return (
     <Pressable
       onPress={() => onPress(conversation)}
+      onLongPress={() => onLongPress?.(conversation)}
+      delayLongPress={350}
       accessibilityRole="button"
+      accessibilityHint="Long press to pin or unpin this chat"
       style={({ pressed }) => ({
         flexDirection: 'row',
         alignItems: 'center',
@@ -34,8 +39,9 @@ export const ConversationRow = memo(function ConversationRow({ conversation, onP
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text numberOfLines={1} style={{ flexShrink: 1, fontWeight: unread ? '700' : '600' }}>{name}</Text>
-          {conversation.contact?.is_hot ? <Ionicons name="flame" size={15} color={colors.accent} /> : null}
+          {contact?.is_hot ? <Ionicons name="flame" size={15} color={colors.accent} /> : null}
           <View style={{ flex: 1 }} />
+          {pinned ? <Ionicons name="pin" size={13} color={colors.muted} /> : null}
           <Text variant="caption" color={unread ? colors.primary : colors.muted}>{formatListTime(conversation.last_message_at)}</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: 2 }}>
@@ -59,6 +65,11 @@ export const ConversationRow = memo(function ConversationRow({ conversation, onP
             </View>
           ) : null}
         </View>
+        {contact?.is_hot ? (
+          <Text variant="caption" color={colors.accent} numberOfLines={1} style={{ marginTop: 2 }}>
+            {contact.hot_score ?? 50}/100{contact.hot_reason ? ` · ${contact.hot_reason}` : ' · Hot lead'}
+          </Text>
+        ) : null}
       </View>
     </Pressable>
   );

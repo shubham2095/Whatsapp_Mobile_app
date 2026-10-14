@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Banner, ChipSelect, EmptyState, Text } from '@/components/ui';
@@ -7,6 +7,7 @@ import { useUser } from '@/features/auth/AuthProvider';
 import { BulkSendCard } from '@/features/campaigns/BulkSendCard';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
 import { useBulkSends, useCampaigns } from '@/features/campaigns/hooks';
+import { shareAllCampaignsReport } from '@/features/campaigns/report';
 import { can } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -56,6 +57,19 @@ export default function CampaignsTab() {
   const canManage = can(user, 'whatsapp.manage'); // the backend requires it for bulk sends and for creating/starting campaigns
   const [tab, setTab] = useState('campaigns');
   const [status, setStatus] = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  async function exportAll() {
+    setExporting(true);
+    try {
+      const count = await shareAllCampaignsReport();
+      if (count === 0) Alert.alert('Nothing to export', 'You have no campaigns yet.');
+    } catch (e) {
+      Alert.alert('Could not create the report', e.message);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const campaigns = useCampaigns({ status });
   const bulk = useBulkSends();
@@ -88,6 +102,10 @@ export default function CampaignsTab() {
         {tab === 'campaigns' ? (
           <View style={{ padding: spacing.md, paddingBottom: 0 }}>
             <ChipSelect options={STATUS_FILTERS} value={status} onChange={setStatus} />
+            <Pressable onPress={exportAll} disabled={exporting} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', marginBottom: spacing.sm, opacity: exporting ? 0.5 : 1 }}>
+              {exporting ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="download-outline" size={18} color={colors.primary} />}
+              <Text variant="small" color={colors.primary} style={{ fontWeight: '600' }}>{exporting ? 'Preparing report...' : 'Download all campaigns (CSV)'}</Text>
+            </Pressable>
           </View>
         ) : null}
       </View>
