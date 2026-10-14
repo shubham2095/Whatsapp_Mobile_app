@@ -14,7 +14,7 @@ function icon(name) {
 export default function TabsLayout() {
   const user = useUser();
   const { colors } = useTheme();
-  // Super admins are platform accounts with no tenant, so workspace tabs are hidden (as on the web).
+  // Super admins are platform accounts with no tenant: they get Companies and Plans instead of the workspace tabs.
   const tenantUser = !user.is_super_admin;
 
   return (
@@ -37,6 +37,10 @@ export default function TabsLayout() {
       </Tabs.Protected>
       <Tabs.Protected guard={tenantUser && can(user, 'campaigns.view')}>
         <Tabs.Screen name="campaigns" options={{ title: 'Campaigns', tabBarIcon: icon('megaphone-outline') }} />
+      </Tabs.Protected>
+      <Tabs.Protected guard={!tenantUser}>
+        <Tabs.Screen name="companies" options={{ title: 'Companies', tabBarIcon: icon('business-outline') }} />
+        <Tabs.Screen name="admin-plans" options={{ title: 'Plans', tabBarIcon: icon('pricetags-outline') }} />
       </Tabs.Protected>
       <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: icon('menu-outline') }} />
     </Tabs>

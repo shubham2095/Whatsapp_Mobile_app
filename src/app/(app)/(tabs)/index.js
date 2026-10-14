@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Badge, Banner, Button, Card, StatCard, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
+import { AdminDashboard } from '@/features/admin/AdminDashboard';
 import { useDashboardStats } from '@/features/analytics/hooks';
 import { useNumbers } from '@/features/whatsapp/hooks';
 import { can, hasFeature, isPlanExpired, roleLabel } from '@/lib/permissions';
@@ -11,7 +12,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 
 const n = (v) => (v ?? 0).toLocaleString();
 
-export default function Dashboard() {
+function WorkspaceDashboard() {
   const user = useUser();
   const { colors, spacing } = useTheme();
   const queryClient = useQueryClient();
@@ -104,4 +105,9 @@ export default function Dashboard() {
       ) : null}
     </ScrollView>
   );
+}
+
+export default function Dashboard() {
+  const user = useUser();
+  return user.is_super_admin ? <AdminDashboard user={user} /> : <WorkspaceDashboard />;
 }

@@ -87,6 +87,12 @@ export default function More() {
           </Card>
         ) : null}
 
+        {user.is_super_admin ? (
+          <Card style={{ paddingVertical: spacing.xs }}>
+            <Row icon="receipt-outline" label="Invoice and tax settings" onPress={() => router.push('/admin-settings')} />
+          </Card>
+        ) : null}
+
         {showAnalytics ? (
           <Card style={{ paddingVertical: spacing.xs }}>
             <Row icon="stats-chart-outline" label="Analytics" onPress={() => router.push('/analytics')} />

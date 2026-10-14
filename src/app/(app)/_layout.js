@@ -68,6 +68,10 @@ export default function AppLayout() {
           <Stack.Screen name="no-plan" options={{ headerShown: false }} />
         </Stack.Protected>
 
+        <Stack.Screen name="company/[id]" options={{ title: 'Company' }} />
+        <Stack.Screen name="company-form" options={{ title: 'Add company' }} />
+        <Stack.Screen name="plan-form" options={{ title: 'Plan' }} />
+        <Stack.Screen name="admin-settings" options={{ title: 'Platform settings' }} />
         <Stack.Screen name="billing" options={{ title: 'Billing' }} />
         <Stack.Screen name="plans" options={{ title: 'Plans' }} />
         <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
