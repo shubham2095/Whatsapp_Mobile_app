@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Banner, Button, ChipSelect, Input, Screen } from '@/components/ui';
 import { CATEGORIES, PRIORITIES } from '@/features/support/meta';
 import { useCreateTicket } from '@/features/support/hooks';
@@ -8,7 +8,14 @@ import { fieldError } from '@/lib/errors';
 
 export default function SupportForm() {
   const create = useCreateTicket();
-  const [form, setForm] = useState({ subject: '', description: '', priority: 'medium', category: null });
+  // Other screens can prefill the ticket (e.g. an account deletion request).
+  const params = useLocalSearchParams();
+  const [form, setForm] = useState({
+    subject: typeof params.subject === 'string' ? params.subject : '',
+    description: typeof params.description === 'string' ? params.description : '',
+    priority: 'medium',
+    category: typeof params.category === 'string' ? params.category : null,
+  });
   const [error, setError] = useState(null);
   const [local, setLocal] = useState({});
 

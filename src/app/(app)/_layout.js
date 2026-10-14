@@ -83,6 +83,7 @@ export default function AppLayout() {
         <Stack.Screen name="ticket/[id]" options={{ title: 'Ticket' }} />
         <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
         <Stack.Screen name="profile" options={{ title: 'Profile' }} />
+        <Stack.Screen name="delete-account" options={{ title: 'Delete account' }} />
         <Stack.Screen name="change-password" options={{ title: 'Change password' }} />
       </Stack>
       <PushBridge user={user} />

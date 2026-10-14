@@ -2,10 +2,11 @@ import { Image } from 'expo-image';
 import { KeyboardAvoidingView, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui';
+import { LegalLinks } from '@/features/legal/LegalLinks';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // Shared frame for login / register / forgot / reset: teal backdrop, logo, form card.
-export function AuthShell({ title, subtitle, children, footer }) {
+export function AuthShell({ title, subtitle, children, footer, legalPrefix }) {
   const { colors, radius, spacing } = useTheme();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.primaryDark }}>
@@ -18,6 +19,9 @@ export function AuthShell({ title, subtitle, children, footer }) {
             {children}
           </View>
           {footer ? <View style={{ alignItems: 'center', marginTop: spacing.lg }}>{footer}</View> : null}
+          <View style={{ marginTop: spacing.lg }}>
+            <LegalLinks color="#ffffffb3" linkColor="#ffffff" prefix={legalPrefix} />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

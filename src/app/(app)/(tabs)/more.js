@@ -4,6 +4,8 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ActionSheet, Avatar, Card, Screen, Text } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { openWeb } from '@/features/legal/openLegal';
+import { LEGAL_URLS } from '@/config';
 import { can, hasFeature, roleLabel } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -121,6 +123,11 @@ export default function More() {
           <Row icon="contrast-outline" label={`Appearance: ${preference === 'system' ? 'Same as phone' : preference === 'dark' ? 'Dark' : 'Light'}`} onPress={() => setThemeMenu(true)} />
           <Row icon="notifications-outline" label="Notifications" onPress={() => router.push('/notifications')} />
           <Row icon="lock-closed-outline" label="Change password" onPress={() => router.push('/change-password')} />
+        </Card>
+
+        <Card style={{ paddingVertical: spacing.xs }}>
+          <Row icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => openWeb(LEGAL_URLS.privacy)} />
+          <Row icon="document-text-outline" label="Terms and Conditions" onPress={() => openWeb(LEGAL_URLS.terms)} />
         </Card>
 
         <Card style={{ paddingVertical: spacing.xs }}>

@@ -50,6 +50,9 @@ export default function Profile() {
       <Input label="Phone" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" error={err('phone')} />
       <Button title="Save changes" loading={loading} onPress={submit} />
       <Button title="Change password" variant="outline" onPress={() => router.push('/change-password')} style={{ marginTop: 12 }} />
+      {user.is_super_admin ? null : (
+        <Button title="Delete account" variant="ghost" onPress={() => router.push('/delete-account')} style={{ marginTop: 24 }} />
+      )}
     </Screen>
   );
 }

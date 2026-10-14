@@ -54,6 +54,7 @@ export default function Register() {
     <AuthShell
       title="Create your account"
       subtitle="Set up your company workspace in a minute."
+      legalPrefix="By creating an account you agree to our"
       footer={
         <Text style={{ color: '#fff' }}>
           Already have an account?{' '}

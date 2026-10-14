@@ -22,3 +22,10 @@ export const updateProfile = (body) => request('/auth/profile', { method: 'PUT',
 
 // The backend validates `password` + `password_confirmation` (the PDF's `new_password` is outdated).
 export const changePassword = (body) => request('/auth/change-password', { method: 'POST', body });
+
+// Permanently deletes the signed-in account. Needs the backend endpoint described in
+// docs/backend-account-deletion.md. `deleteCompany` must be true for a company owner, because
+// deleting an owner removes the whole workspace.
+// A 404/405 answer means the server does not have the endpoint yet.
+export const deleteAccount = ({ password, deleteCompany = false }) =>
+  request('/auth/delete-account', { method: 'POST', body: { password, delete_company: deleteCompany } });
