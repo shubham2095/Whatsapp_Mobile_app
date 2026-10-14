@@ -35,7 +35,7 @@ Built with **Expo SDK 57**, **React Native 0.86**, **Expo Router** and plain **J
 
 ## Requirements
 
-- Node.js 22 or newer (the EAS build is pinned to Node 24.17.0 in `eas.json`) and npm
+- Node.js 20.19.4+, 22.13+ or 24.3+ (React Native 0.86 requirement; the EAS build is pinned to Node 24.17.0 in `eas.json`) and npm
 - An Android phone or emulator
 - An [Expo](https://expo.dev) account for cloud builds
 
