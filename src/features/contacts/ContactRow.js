@@ -23,7 +23,8 @@ export function priorityOf(score) {
 }
 
 // `showHot`: hot-list mode, adds the AI priority badge, reason and age.
-export const ContactRow = memo(function ContactRow({ contact, onPress, showHot = false }) {
+// Long-press starts selecting; while selecting, rows show a tick circle and tapping toggles it.
+export const ContactRow = memo(function ContactRow({ contact, onPress, onLongPress, showHot = false, selectionMode = false, selected = false }) {
   const { colors, spacing, radius } = useTheme();
   const title = contactTitle(contact);
   const tags = tagsOf(contact).filter((t) => t.toLowerCase() !== 'hot').slice(0, 3);
@@ -32,17 +33,20 @@ export const ContactRow = memo(function ContactRow({ contact, onPress, showHot =
   return (
     <Pressable
       onPress={() => onPress(contact)}
+      onLongPress={onLongPress ? () => onLongPress(contact) : undefined}
+      delayLongPress={350}
       accessibilityRole="button"
       style={({ pressed }) => ({
         flexDirection: 'row',
         gap: spacing.md,
         paddingHorizontal: spacing.lg,
         paddingVertical: spacing.md,
-        backgroundColor: pressed ? colors.chipBg : colors.card,
+        backgroundColor: selected ? colors.chipBg : pressed ? colors.chipBg : colors.card,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
       })}
     >
+      {selectionMode ? <Ionicons name={selected ? 'checkmark-circle' : 'ellipse-outline'} size={26} color={selected ? colors.primary : colors.muted} style={{ alignSelf: 'center' }} /> : null}
       <Avatar name={title} size={46} />
       <View style={{ flex: 1, gap: 2 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

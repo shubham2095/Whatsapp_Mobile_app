@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Alert } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Banner, Button, Card, Input, Screen, Text } from '@/components/ui';
 import { useSendBulk, useTemplateNeeds } from '@/features/campaigns/hooks';
 import { TemplateSelect } from '@/features/campaigns/TemplateSelect';
@@ -26,7 +26,9 @@ function parseNumbers(text) {
 export default function BulkForm() {
   const { spacing } = useTheme();
   const send = useSendBulk();
-  const [text, setText] = useState('');
+  // Contacts can open this screen with their numbers already filled in.
+  const params = useLocalSearchParams();
+  const [text, setText] = useState(typeof params.numbers === 'string' ? params.numbers : '');
   const [template, setTemplate] = useState(null);
   const [vars, setVars] = useState({});
   const [mediaUrl, setMediaUrl] = useState('');
