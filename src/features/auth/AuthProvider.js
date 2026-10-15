@@ -5,6 +5,7 @@ import * as authApi from '@/api/auth';
 import { setUnauthorizedHandler } from '@/api/client';
 import { clearBillingDetails } from '@/features/billing/billingDetails';
 import { unregisterFromPush } from '@/features/push/notifications';
+import { setMonitoringUser } from '@/lib/monitoring';
 import { clearPersistedCache } from '@/lib/queryClient';
 import { clearToken, getToken, saveToken } from '@/lib/storage';
 import { clearCachedUser, loadCachedUser, saveCachedUser } from '@/lib/userCache';
@@ -23,6 +24,7 @@ export function AuthProvider({ children }) {
   const setAuthed = useCallback((user, stale = false) => {
     setState({ status: 'authed', user, stale });
     saveCachedUser(user);
+    setMonitoringUser(user.id);
   }, []);
 
   const endSession = useCallback(async () => {
@@ -30,6 +32,7 @@ export function AuthProvider({ children }) {
     await clearBillingDetails(); // invoice name/address belong to the signed-out user
     await clearCachedUser();
     await clearPersistedCache(); // saved chats and contacts belong to the signed-out user too
+    setMonitoringUser(null);
     setState({ status: 'guest', user: null, stale: false });
   }, []);
 

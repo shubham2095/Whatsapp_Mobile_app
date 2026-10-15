@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
+import { AppState, Pressable, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
 import * as Network from 'expo-network';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,9 +8,11 @@ import { focusManager, onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { UpdateBanner } from '@/components/UpdateBanner';
 import { ToastProvider } from '@/components/Toast';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { OfflineScreen } from '@/features/auth/OfflineScreen';
+import { captureError, monitoringEnabled, withMonitoring } from '@/lib/monitoring';
 import { persistOptions, queryClient } from '@/lib/queryClient';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
@@ -42,11 +44,28 @@ function Navigator() {
         </Stack.Protected>
       </Stack>
       <OfflineIndicator />
+      <UpdateBanner />
     </>
   );
 }
 
-export default function RootLayout() {
+// Shown when a screen crashes while rendering. It sits outside the theme providers, so it uses plain colours.
+export function ErrorBoundary({ error, retry }) {
+  useEffect(() => {
+    captureError(error);
+  }, [error]);
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: '#f0f2f5' }}>
+      <Text style={{ fontSize: 20, fontWeight: '700', color: '#111b21', marginBottom: 8 }}>Something went wrong</Text>
+      <Text style={{ color: '#667781', textAlign: 'center', marginBottom: 24 }}>{monitoringEnabled ? 'The problem was reported. ' : ''}Try again, and if it keeps happening please contact support.</Text>
+      <Pressable onPress={retry} accessibilityRole="button" style={{ backgroundColor: '#f26f21', borderRadius: 12, paddingVertical: 14, paddingHorizontal: 28 }}>
+        <Text style={{ color: '#fff', fontWeight: '700' }}>Try again</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function RootLayout() {
   // Tell React Query when the app is foregrounded: pauses polling in the background and
   // refetches on return.
   useEffect(() => {
@@ -78,3 +97,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default withMonitoring(RootLayout);

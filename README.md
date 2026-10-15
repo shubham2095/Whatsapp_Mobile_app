@@ -59,6 +59,7 @@ Copy `.env.example` to `.env` if you want to change the defaults. Only `EXPO_PUB
 | --- | --- | --- |
 | `EXPO_PUBLIC_API_URL` | `https://main.heltog.com/api/v1` | Backend API. From an Android emulator use `http://10.0.2.2:8000/api/v1`; from a real phone use your PC's LAN IP or a tunnel. |
 | `EXPO_PUBLIC_WEB_URL` | `https://frontend.heltog.com` | Website that hosts the Privacy Policy, Terms and delete-account pages. |
+| `EXPO_PUBLIC_SENTRY_DSN` | empty (off) | Crash reporting, see below. |
 
 Other constants (default country code `91` for bare 10-digit numbers) are in `src/config.js`.
 
@@ -123,6 +124,35 @@ npx eas-cli@latest init           # links the project and writes extra.eas.proje
 
 Commit your changes first: EAS builds from git. The first build asks to generate an Android keystore (answer yes).
 Keep the keystore safe (`npx eas-cli@latest credentials`); you need the same one for every update.
+
+### Over-the-air updates (EAS Update)
+
+JavaScript-only changes (screens, text, logic) can reach installed apps without a new build or a Play Store review.
+Each build profile listens to a channel of the same name (`development`, `preview`, `production`).
+
+```bash
+npx eas-cli@latest update --channel preview --message "Fix chat retry" --environment preview
+```
+
+- Installed apps download the update in the background; a "New version ready. Tap to restart." pill appears, or
+  the update applies on the next launch.
+- Updates only reach builds with the **same `version`** in `app.json` (`runtimeVersion` policy `appVersion`).
+  Anything that touches native code (a new Expo package, a new permission, plugin changes) needs a **new build**, and
+  you should bump `version` so old builds do not receive JavaScript they cannot run.
+- Publish to `preview` first, check it on a phone, then publish to `production`.
+
+### Crash reporting (Sentry)
+
+Off by default. To turn it on:
+
+1. Create a project on [sentry.io](https://sentry.io) (platform React Native) and copy its DSN.
+2. Add `EXPO_PUBLIC_SENTRY_DSN` as an EAS environment variable (plain text) for the profiles you want.
+3. For readable stack traces also set `SENTRY_ORG` and `SENTRY_PROJECT` as EAS environment variables and
+   `SENTRY_AUTH_TOKEN` as an EAS **secret**. `app.config.js` then adds the Sentry build plugin, which uploads source maps.
+   Never commit the token.
+
+Reports carry only the internal user id (no name, email or phone), and network breadcrumbs have their query strings
+removed. Nothing is sent from development builds.
 
 ### Push notifications
 

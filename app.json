@@ -86,6 +86,12 @@
         "projectId": "841a8d92-d48e-4081-8b1d-bbf122792052"
       }
     },
-    "owner": "atul9758s-team"
+    "owner": "atul9758s-team",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/841a8d92-d48e-4081-8b1d-bbf122792052"
+    }
   }
 }
