@@ -4,22 +4,25 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActionSheet, Banner, Button, Text } from '@/components/ui';
-import { formatDuration, formatFileSize } from '@/lib/format';
+import { formatDuration, formatFileSize, formatRemaining } from '@/lib/format';
+import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
-import { useSendMedia, useSendTemplate, useSendText } from './hooks';
+import { useSendMedia, useSendTemplate } from './hooks';
 import { pickDocument, pickFromGallery, takePhoto } from './pickMedia';
 import { TemplatePicker } from './TemplatePicker';
 import { useVoiceRecorder } from './useVoiceRecorder';
 
 const MEDIA_ICON = { image: 'image-outline', video: 'videocam-outline', audio: 'mic-outline', document: 'document-text-outline' };
 
-export function Composer({ conversationId, windowOpen }) {
+// onSendText(body) hands a text message to the chat's outbox (it shows at once and can be retried).
+// windowEndsAt: when the customer's 24-hour reply window closes (ms), or null if unknown.
+export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt = null }) {
   const { colors, radius, spacing, fontSize } = useTheme();
   const insets = useSafeAreaInsets();
-  const sendText = useSendText(conversationId);
   const sendMedia = useSendMedia(conversationId);
   const sendTemplate = useSendTemplate(conversationId);
   const voice = useVoiceRecorder();
+  const now = useNow(30_000);
 
   const [text, setText] = useState('');
   const [pending, setPending] = useState(null); // file waiting to be sent
@@ -28,7 +31,7 @@ export function Composer({ conversationId, windowOpen }) {
   const [attachOpen, setAttachOpen] = useState(false);
   const [templatesOpen, setTemplatesOpen] = useState(false);
 
-  const busy = sendText.isPending || sendMedia.isPending;
+  const busy = sendMedia.isPending;
   const canSend = !busy && (pending || text.trim().length > 0);
 
   function fail(e) {
@@ -62,14 +65,9 @@ export function Composer({ conversationId, windowOpen }) {
       );
       return;
     }
-    const body = text.trim();
-    setText(''); // clear at once; put it back if the send fails
-    sendText.mutate(body, {
-      onError: (e) => {
-        setText((current) => current || body);
-        fail(e);
-      },
-    });
+    // The message appears in the chat immediately; if it fails the chat offers to send it again.
+    onSendText(text.trim());
+    setText('');
   }
 
   async function startRecording() {
@@ -131,6 +129,15 @@ export function Composer({ conversationId, windowOpen }) {
     <View style={containerStyle}>
       <Banner message={error} />
       <Banner tone="success" message={notice} />
+
+      {windowEndsAt && windowEndsAt > now ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: spacing.xs }}>
+          <Ionicons name="time-outline" size={14} color={windowEndsAt - now < 2 * 3600 * 1000 ? colors.warning : colors.muted} />
+          <Text variant="caption" color={windowEndsAt - now < 2 * 3600 * 1000 ? colors.warning : colors.muted} style={{ fontWeight: windowEndsAt - now < 2 * 3600 * 1000 ? '700' : '400' }}>
+            Free replies close in {formatRemaining(windowEndsAt - now)}
+          </Text>
+        </View>
+      ) : null}
 
       {pending ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.bg, borderRadius: radius.md, padding: spacing.sm, marginBottom: spacing.sm }}>

@@ -50,3 +50,25 @@ export function ListSkeleton({ rows = 7, variant = 'row' }) {
     </View>
   );
 }
+
+// Placeholder chat bubbles while a conversation loads (alternating sides, like a real chat).
+export function ChatSkeleton() {
+  const { spacing } = useTheme();
+  const bubbles = [
+    { mine: false, w: '58%' },
+    { mine: true, w: '46%' },
+    { mine: false, w: '70%' },
+    { mine: true, w: '38%' },
+    { mine: true, w: '62%' },
+    { mine: false, w: '44%' },
+  ];
+  return (
+    <View accessibilityLabel="Loading messages" accessibilityRole="progressbar" style={{ flex: 1, padding: spacing.md, gap: spacing.sm, justifyContent: 'flex-end' }}>
+      {bubbles.map((b, i) => (
+        <View key={i} style={{ alignItems: b.mine ? 'flex-end' : 'flex-start' }}>
+          <Skeleton width={b.w} height={44} radius={14} />
+        </View>
+      ))}
+    </View>
+  );
+}

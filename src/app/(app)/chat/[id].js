@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Pressable, View } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
-import { ActionSheet, Banner, EmptyState, Text } from '@/components/ui';
+import { ActionSheet, Banner, ChatSkeleton, EmptyState, Text } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { Composer } from '@/features/inbox/Composer';
@@ -12,6 +12,7 @@ import { ImageViewer } from '@/features/inbox/ImageViewer';
 import { TransferSheet } from '@/features/inbox/TransferSheet';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
 import { MessageInfoSheet } from '@/features/inbox/MessageInfoSheet';
+import { useOutbox } from '@/features/inbox/useOutbox';
 import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
 import { formatDayLabel, isSameDay } from '@/lib/format';
 import { can } from '@/lib/permissions';
@@ -56,6 +57,7 @@ export default function Chat() {
   const toast = useToast();
   const markRead = useMarkRead();
   const deleteMessage = useDeleteMessage(id);
+  const outbox = useOutbox(id);
 
   const now = useNow();
   const [viewerUri, setViewerUri] = useState(null);
@@ -86,12 +88,21 @@ export default function Chat() {
   const latestInbound = messages.find((m) => m.direction === 'inbound');
   const repliedRecently = latestInbound ? now - new Date(latestInbound.created_at).getTime() < WINDOW_MS : false;
   const windowOpen = windowParam === 'true' || repliedRecently;
+  // Customers can be answered freely for 24 hours after their last message.
+  const windowEndsAt = latestInbound ? new Date(latestInbound.created_at).getTime() + WINDOW_MS : null;
+
+  // Messages still being sent come first (newest first, like the chat list).
+  const listData = useMemo(() => [...outbox.items, ...messages], [outbox.items, messages]);
 
   const canReply = can(user, 'conversations.reply');
   const canDelete = can(user, 'whatsapp.manage');
 
   const actions = [];
-  if (selected) {
+  if (selected?._local) {
+    const target = selected;
+    actions.push({ label: 'Send again', icon: 'refresh-outline', onPress: () => outbox.retry(target.id) });
+    actions.push({ label: 'Discard', icon: 'trash-outline', danger: true, onPress: () => outbox.discard(target.id) });
+  } else if (selected) {
     const target = selected;
     actions.push({ label: 'Message info', icon: 'information-circle-outline', onPress: () => setInfoFor(target) });
   }
@@ -115,19 +126,27 @@ export default function Chat() {
     });
   }
 
+  // A message that is still sending has nothing to offer; a failed one can be sent again.
+  const pickMessage = useCallback((m) => {
+    if (!(m._local && m.status === 'sending')) setSelected(m);
+  }, []);
+  const pickFailed = useCallback((m) => {
+    if (m._local && m.status === 'failed') setSelected(m);
+  }, []);
+
   const renderItem = useCallback(
     ({ item, index }) => {
       // Inverted list: the next index is the OLDER message, so a day chip goes above the first of each day.
-      const older = messages[index + 1];
+      const older = listData[index + 1];
       const startsDay = !older || !isSameDay(item.created_at, older.created_at);
       return (
         <View>
           {startsDay ? <DayChip iso={item.created_at} /> : null}
-          <MessageBubble message={item} onLongPress={setSelected} onOpenImage={setViewerUri} />
+          <MessageBubble message={item} onPress={pickFailed} onLongPress={pickMessage} onOpenImage={setViewerUri} />
         </View>
       );
     },
-    [messages],
+    [listData, pickFailed, pickMessage],
   );
 
   return (
@@ -147,11 +166,11 @@ export default function Chat() {
           </Pressable>
         </View>
       ) : isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+        <ChatSkeleton />
       ) : (
         <FlatList
           inverted
-          data={messages}
+          data={listData}
           keyExtractor={(m) => m.id}
           renderItem={renderItem}
           onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
@@ -168,7 +187,7 @@ export default function Chat() {
       )}
 
       {canReply ? (
-        <Composer conversationId={id} windowOpen={windowOpen} />
+        <Composer conversationId={id} windowOpen={windowOpen} windowEndsAt={windowEndsAt} onSendText={outbox.send} />
       ) : (
         <View style={{ padding: spacing.md, backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border }}>
           <Text variant="small" muted style={{ textAlign: 'center' }}>You do not have permission to reply in this inbox.</Text>

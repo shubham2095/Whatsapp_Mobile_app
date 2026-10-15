@@ -55,3 +55,10 @@ export function timeAgo(iso) {
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
 }
+
+// 12_600_000 ms -> "3h 30m", 2_700_000 -> "45m". Used for the 24-hour window countdown.
+export function formatRemaining(ms) {
+  const mins = Math.max(0, Math.floor(ms / 60000));
+  const h = Math.floor(mins / 60);
+  return h > 0 ? `${h}h ${mins % 60}m` : `${mins}m`;
+}

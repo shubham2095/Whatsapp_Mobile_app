@@ -83,7 +83,7 @@ function Attachment({ message, attachment, onOpenImage }) {
 // The backend stores "[Image]"-style placeholders as the body of caption-less media.
 const isPlaceholder = (body) => !body || /^\[[^\]]+\]$/.test(body.trim());
 
-export const MessageBubble = memo(function MessageBubble({ message, onLongPress, onOpenImage }) {
+export const MessageBubble = memo(function MessageBubble({ message, onPress, onLongPress, onOpenImage }) {
   const { colors, radius, spacing } = useTheme();
   const outbound = message.direction === 'outbound';
   const attachment = message.attachments?.find((a) => a.url);
@@ -94,6 +94,7 @@ export const MessageBubble = memo(function MessageBubble({ message, onLongPress,
   return (
     <View style={{ alignItems: outbound ? 'flex-end' : 'flex-start', paddingHorizontal: spacing.md, paddingVertical: 2 }}>
       <Pressable
+        onPress={onPress ? () => onPress(message) : undefined}
         onLongPress={() => onLongPress(message)}
         delayLongPress={300}
         style={{
