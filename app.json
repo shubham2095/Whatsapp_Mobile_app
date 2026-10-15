@@ -13,7 +13,6 @@
       "adaptiveIcon": {
         "backgroundColor": "#0a5555",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "package": "com.heltog.mobile",
@@ -66,7 +65,8 @@
         "expo-notifications",
         {
           "color": "#0e7c7b",
-          "defaultChannel": "messages"
+          "defaultChannel": "messages",
+          "icon": "./assets/notification-icon.png"
         }
       ],
       [
