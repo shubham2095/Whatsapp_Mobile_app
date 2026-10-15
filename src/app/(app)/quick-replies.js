@@ -52,7 +52,7 @@ export default function QuickReplies() {
         keyExtractor={(r) => r.id}
         ListHeaderComponent={
           <Text variant="small" muted style={{ padding: spacing.lg, paddingBottom: spacing.sm }}>
-            In a chat, tap the bolt button, or type / and a few letters. Use {'{name}'} for the customer's first name and {'{agent}'} for your name. These are saved on this phone.
+            In a chat, tap the bolt button, or type / and a few letters. Use {'{name}'} for the first name of the customer and {'{agent}'} for your name. These are saved on this phone.
           </Text>
         }
         ListEmptyComponent={<EmptyState icon="flash-outline" title="No quick replies yet" message="Tap + to save your first one." />}
