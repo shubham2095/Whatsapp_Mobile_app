@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Avatar, Badge, Banner, EmptyState, Text } from '@/components/ui';
+import { ActionSheet, Avatar, Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useRemoveMember, useTeam, useToggleMember } from '@/features/team/hooks';
 import { formatListTime } from '@/lib/format';
@@ -45,7 +45,7 @@ export default function Team() {
       ]
     : [];
 
-  if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
+  if (isLoading) return <ListSkeleton />;
   if (isError) {
     return (
       <View style={{ padding: spacing.lg }}>

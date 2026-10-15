@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
-import { Badge, Banner, EmptyState, Text } from '@/components/ui';
+import { Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useInvoices } from '@/features/billing/hooks';
 import { formatListTime } from '@/lib/format';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -11,7 +11,7 @@ export default function Invoices() {
   const { data, isLoading, isError, error, refetch, isRefetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInvoices();
   const invoices = useMemo(() => data?.pages.flatMap((p) => p.invoices) ?? [], [data]);
 
-  if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
+  if (isLoading) return <ListSkeleton />;
   if (isError && !data) return <View style={{ padding: spacing.lg }}><Banner message={error.message} /></View>;
 
   return (

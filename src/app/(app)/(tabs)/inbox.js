@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Banner, EmptyState, Text } from '@/components/ui';
+import { ActionSheet, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { ConversationRow, contactLabel } from '@/features/inbox/ConversationRow';
 import { useConversations } from '@/features/inbox/hooks';
@@ -18,6 +19,7 @@ const FILTERS = [
 
 export default function InboxTab() {
   const user = useUser();
+  const toast = useToast();
   const { colors, radius, spacing, fontSize } = useTheme();
   const [filter, setFilter] = useState('all');
   const [agent, setAgent] = useState(''); // '' = every agent
@@ -56,8 +58,11 @@ export default function InboxTab() {
   }, []);
 
   const renderItem = useCallback(
-    ({ item }) => <ConversationRow conversation={item} onPress={openChat} onLongPress={(c) => togglePin(c.id)} pinned={pinned.has(item.id)} />,
-    [openChat, togglePin, pinned],
+    ({ item }) => <ConversationRow conversation={item} onPress={openChat} onLongPress={(c) => {
+        togglePin(c.id);
+        toast.show(pinned.has(c.id) ? 'Chat unpinned' : 'Chat pinned');
+      }} pinned={pinned.has(item.id)} />,
+    [openChat, togglePin, pinned, toast],
   );
 
   const agentActions = [
@@ -123,7 +128,7 @@ export default function InboxTab() {
           </Pressable>
         </View>
       ) : isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+        <ListSkeleton />
       ) : (
         <FlatList
           data={conversations}

@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { router } from 'expo-router';
 import { updateProfile } from '@/api/auth';
 import { Banner, Button, Input, Screen } from '@/components/ui';
+import { useToast } from '@/components/Toast';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { fieldError, isValidEmail } from '@/lib/errors';
 
 export default function Profile() {
   const { user, setUser } = useAuth();
+  const toast = useToast();
   const [form, setForm] = useState({ name: user.name, email: user.email, phone: user.phone ?? '' });
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -32,6 +34,7 @@ export default function Profile() {
       const data = await updateProfile({ name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim() || null });
       setUser(data.user);
       setSaved(true);
+      toast.show('Profile updated');
     } catch (e) {
       setError(e);
     } finally {

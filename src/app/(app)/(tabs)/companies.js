@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar, Badge, Banner, EmptyState, Text } from '@/components/ui';
+import { Avatar, Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useCompanies } from '@/features/admin/hooks';
 import { COMPANY_TONE } from '@/features/admin/meta';
 import { formatListTime } from '@/lib/format';
@@ -47,7 +47,7 @@ export default function Companies() {
           </Pressable>
         </View>
       ) : isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+        <ListSkeleton />
       ) : (
         <FlatList
           data={companies}

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Switch, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge, Banner, EmptyState, Text } from '@/components/ui';
+import { Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useChatbots, useToggleChatbot } from '@/features/automation/hooks';
 import { can, hasFeature, planAllows } from '@/lib/permissions';
@@ -19,7 +19,7 @@ export default function Chatbots() {
   if (!hasFeature(user, 'chatbot') || !planAllows(user, 'max_chatbots')) {
     return <EmptyState icon="lock-closed-outline" title="Chatbot is not in your plan" message="Upgrade your plan on the Heltog web app to use chatbots." />;
   }
-  if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
+  if (isLoading) return <ListSkeleton variant="card" />;
   if (isError && !data) {
     return (
       <View style={{ padding: spacing.lg }}>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Banner, Sheet, Text } from '@/components/ui';
+import { useToast } from '@/components/Toast';
 import { useAssignConversation, useAssignableAgents, useUnassignConversation } from '@/features/team/hooks';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -11,12 +12,19 @@ export function TransferSheet({ visible, conversationId, onClose }) {
   const agents = useAssignableAgents(visible);
   const assign = useAssignConversation();
   const unassign = useUnassignConversation();
+  const toast = useToast();
   const [error, setError] = useState(null);
   const busy = assign.isPending || unassign.isPending;
 
   function run(mutation, vars) {
     setError(null);
-    mutation.mutate(vars, { onSuccess: onClose, onError: (e) => setError(e.message) });
+    mutation.mutate(vars, {
+      onSuccess: () => {
+        toast.show(mutation === unassign ? 'Chat unassigned' : 'Chat transferred');
+        onClose();
+      },
+      onError: (e) => setError(e.message),
+    });
   }
 
   return (

@@ -1,6 +1,6 @@
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
-import { Avatar, Badge, Banner, EmptyState, Text } from '@/components/ui';
+import { Avatar, Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useAgents } from '@/features/team/hooks';
 import { roleLabel } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -19,7 +19,7 @@ export default function Agents() {
   const { colors, spacing } = useTheme();
   const { data, isLoading, isError, error, refetch, isRefetching } = useAgents();
 
-  if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
+  if (isLoading) return <ListSkeleton />;
   if (isError) {
     return (
       <View style={{ padding: spacing.lg }}>

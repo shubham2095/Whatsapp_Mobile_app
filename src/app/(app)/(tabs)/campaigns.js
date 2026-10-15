@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Banner, ChipSelect, EmptyState, Text } from '@/components/ui';
+import { Banner, ChipSelect, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { BulkSendCard } from '@/features/campaigns/BulkSendCard';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
@@ -34,7 +34,7 @@ function PagedList({ query, items, renderItem, keyExtractor, empty }) {
       </View>
     );
   }
-  if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
+  if (isLoading) return <ListSkeleton variant="card" />;
 
   return (
     <FlatList

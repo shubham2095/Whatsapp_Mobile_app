@@ -1,5 +1,5 @@
-import { ActivityIndicator, FlatList, RefreshControl, View } from 'react-native';
-import { Banner, Card, EmptyState, Text } from '@/components/ui';
+import { FlatList, RefreshControl, View } from 'react-native';
+import { Banner, Card, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useWallet } from '@/features/billing/hooks';
 import { formatListTime } from '@/lib/format';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -8,7 +8,7 @@ export default function Wallet() {
   const { colors, spacing } = useTheme();
   const { data, isLoading, isError, error, refetch, isRefetching } = useWallet();
 
-  if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
+  if (isLoading) return <ListSkeleton />;
   if (isError) return <View style={{ padding: spacing.lg }}><Banner message={error.message} /></View>;
 
   return (

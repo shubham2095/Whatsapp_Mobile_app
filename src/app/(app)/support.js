@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge, Banner, ChipSelect, EmptyState, Text } from '@/components/ui';
+import { Badge, Banner, ChipSelect, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { PRIORITY_TONE, STATUSES, STATUS_TONE, statusLabel } from '@/features/support/meta';
 import { useTickets } from '@/features/support/hooks';
@@ -53,7 +53,7 @@ export default function Support() {
           </Pressable>
         </View>
       ) : isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+        <ListSkeleton />
       ) : (
         <FlatList
           data={tickets}

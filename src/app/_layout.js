@@ -1,21 +1,22 @@
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 import { Stack } from 'expo-router';
+import * as Network from 'expo-network';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider, focusManager } from '@tanstack/react-query';
+import { focusManager, onlineManager } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { ToastProvider } from '@/components/Toast';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { OfflineScreen } from '@/features/auth/OfflineScreen';
+import { persistOptions, queryClient } from '@/lib/queryClient';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false },
-  },
-});
+const isReachable = (state) => !!state.isConnected && state.isInternetReachable !== false;
 
 function Navigator() {
   const { status } = useAuth();
@@ -40,6 +41,7 @@ function Navigator() {
           <Stack.Screen name="(auth)" />
         </Stack.Protected>
       </Stack>
+      <OfflineIndicator />
     </>
   );
 }
@@ -52,15 +54,27 @@ export default function RootLayout() {
     return () => sub.remove();
   }, []);
 
+  // Tell React Query when the phone loses or regains internet: it then stops retrying while offline
+  // and refetches every active screen the moment the connection is back.
+  useEffect(() => {
+    onlineManager.setEventListener((setOnline) => {
+      Network.getNetworkStateAsync().then((state) => setOnline(isReachable(state))).catch(() => {});
+      const sub = Network.addNetworkStateListener((state) => setOnline(isReachable(state)));
+      return () => sub.remove();
+    });
+  }, []);
+
   return (
     <SafeAreaProvider>
-      <QueryClientProvider client={queryClient}>
+      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <ThemeProvider>
-          <AuthProvider>
-            <Navigator />
-          </AuthProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <Navigator />
+            </AuthProvider>
+          </ToastProvider>
         </ThemeProvider>
-      </QueryClientProvider>
+      </PersistQueryClientProvider>
     </SafeAreaProvider>
   );
 }

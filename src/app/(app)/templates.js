@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge, Banner, Button, EmptyState, Text } from '@/components/ui';
+import { Badge, Banner, Button, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useSyncTemplates, useTemplates } from '@/features/templates/hooks';
 import { CATEGORY_LABEL, CATEGORY_TONE, STATUS_TONE } from '@/features/templates/meta';
@@ -94,7 +94,7 @@ export default function Templates() {
           </Pressable>
         </View>
       ) : isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+        <ListSkeleton variant="card" />
       ) : (
         <FlatList
           data={templates}

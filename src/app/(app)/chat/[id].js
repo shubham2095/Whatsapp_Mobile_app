@@ -4,6 +4,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { ActionSheet, Banner, EmptyState, Text } from '@/components/ui';
+import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { Composer } from '@/features/inbox/Composer';
 import { dismissChatNotifications, setActiveConversation } from '@/features/push/notifications';
@@ -52,6 +53,7 @@ export default function Chat() {
   const user = useUser();
   const { colors, spacing } = useTheme();
   const { messages, isLoading, isError, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } = useMessages(id);
+  const toast = useToast();
   const markRead = useMarkRead();
   const deleteMessage = useDeleteMessage(id);
 
@@ -94,7 +96,7 @@ export default function Chat() {
     actions.push({ label: 'Message info', icon: 'information-circle-outline', onPress: () => setInfoFor(target) });
   }
   if (selected?.body) {
-    actions.push({ label: 'Copy text', icon: 'copy-outline', onPress: () => Clipboard.setStringAsync(selected.body) });
+    actions.push({ label: 'Copy text', icon: 'copy-outline', onPress: () => { Clipboard.setStringAsync(selected.body); toast.show('Copied'); } });
   }
   if (selected && canDelete) {
     actions.push({
@@ -107,7 +109,7 @@ export default function Chat() {
           {
             text: 'Delete',
             style: 'destructive',
-            onPress: () => deleteMessage.mutate(selected.id, { onError: (e) => Alert.alert('Could not delete', e.message) }),
+            onPress: () => deleteMessage.mutate(selected.id, { onSuccess: () => toast.show('Message deleted'), onError: (e) => Alert.alert('Could not delete', e.message) }),
           },
         ]),
     });

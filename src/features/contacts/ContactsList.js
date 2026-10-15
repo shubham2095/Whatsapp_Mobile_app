@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Banner, EmptyState, Text } from '@/components/ui';
+import { ActionSheet, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { can } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -98,7 +98,7 @@ export function ContactsList({ fixedFilter }) {
           </Pressable>
         </View>
       ) : isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+        <ListSkeleton />
       ) : (
         <FlatList
           data={contacts}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Banner, Button, Card, EmptyState, Input, Text } from '@/components/ui';
+import { Banner, Button, Card, EmptyState, Input, Text, ListSkeleton } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useAddToBlacklist, useBlacklist, useRemoveFromBlacklist } from '@/features/contacts/hooks';
 import { fieldError } from '@/lib/errors';
@@ -124,7 +124,7 @@ export default function Blacklist() {
           )}
           ListEmptyComponent={
             isLoading ? (
-              <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />
+              <ListSkeleton />
             ) : (
               <EmptyState icon="shield-checkmark-outline" title={search ? 'No matching numbers' : 'Black list is empty'} message="Blocked numbers are skipped by every campaign and bulk send." />
             )
