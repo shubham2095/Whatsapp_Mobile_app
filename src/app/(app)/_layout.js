@@ -62,6 +62,7 @@ export default function AppLayout() {
           <Stack.Screen name="social" options={{ title: 'Social' }} />
           <Stack.Screen name="social-post-form" options={{ title: 'New post' }} />
           <Stack.Screen name="assistant" options={{ title: 'Ask AI' }} />
+          <Stack.Screen name="quick-replies" options={{ title: 'Quick replies' }} />
         </Stack.Protected>
 
         <Stack.Protected guard={planBlocked}>

@@ -71,6 +71,7 @@ export default function More() {
 
         {showChatbot || showAutomations || showSocial || tenantUser ? (
           <Card style={{ paddingVertical: spacing.xs }}>
+            {tenantUser && can(user, 'conversations.reply') ? <Row icon="flash-outline" label="Quick replies" onPress={() => router.push('/quick-replies')} /> : null}
             {tenantUser ? <Row icon="sparkles-outline" label="Ask AI" onPress={() => router.push('/assistant')} /> : null}
             {showChatbot ? <Row icon="hardware-chip-outline" label="Chatbots" onPress={() => router.push('/chatbots')} /> : null}
             {showAutomations ? <Row icon="git-network-outline" label="Automations" onPress={() => router.push('/automations')} /> : null}

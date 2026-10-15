@@ -187,7 +187,7 @@ export default function Chat() {
       )}
 
       {canReply ? (
-        <Composer conversationId={id} windowOpen={windowOpen} windowEndsAt={windowEndsAt} onSendText={outbox.send} />
+        <Composer conversationId={id} windowOpen={windowOpen} windowEndsAt={windowEndsAt} onSendText={outbox.send} userId={user.id} contactName={name} agentName={user.name} />
       ) : (
         <View style={{ padding: spacing.md, backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border }}>
           <Text variant="small" muted style={{ textAlign: 'center' }}>You do not have permission to reply in this inbox.</Text>

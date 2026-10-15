@@ -9,6 +9,8 @@ import { useNow } from '@/lib/useNow';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useSendMedia, useSendTemplate } from './hooks';
 import { pickDocument, pickFromGallery, takePhoto } from './pickMedia';
+import { QuickReplyPicker } from './QuickReplyPicker';
+import { fillReply, useQuickReplies } from './quickReplies';
 import { TemplatePicker } from './TemplatePicker';
 import { useVoiceRecorder } from './useVoiceRecorder';
 
@@ -16,13 +18,15 @@ const MEDIA_ICON = { image: 'image-outline', video: 'videocam-outline', audio: '
 
 // onSendText(body) hands a text message to the chat's outbox (it shows at once and can be retried).
 // windowEndsAt: when the customer's 24-hour reply window closes (ms), or null if unknown.
-export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt = null }) {
+export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt = null, userId, contactName, agentName }) {
   const { colors, radius, spacing, fontSize } = useTheme();
   const insets = useSafeAreaInsets();
   const sendMedia = useSendMedia(conversationId);
   const sendTemplate = useSendTemplate(conversationId);
   const voice = useVoiceRecorder();
   const now = useNow(30_000);
+  const quick = useQuickReplies(userId);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   const [text, setText] = useState('');
   const [pending, setPending] = useState(null); // file waiting to be sent
@@ -33,6 +37,14 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
 
   const busy = sendMedia.isPending;
   const canSend = !busy && (pending || text.trim().length > 0);
+
+  function pickReply(reply) {
+    setText(fillReply(reply.text, { name: contactName, agent: agentName }));
+  }
+
+  // Typing "/" at the start shows matching saved replies, like WhatsApp Business.
+  const slash = text.startsWith('/') && !text.includes(' ') ? text.slice(1).toLowerCase() : null;
+  const suggestions = slash === null ? [] : quick.replies.filter((r) => r.title.toLowerCase().includes(slash)).slice(0, 6);
 
   function fail(e) {
     setNotice(null);
@@ -139,6 +151,17 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
         </View>
       ) : null}
 
+      {suggestions.length > 0 ? (
+        <View style={{ marginBottom: spacing.sm, gap: 6 }}>
+          {suggestions.map((r) => (
+            <Pressable key={r.id} onPress={() => pickReply(r)} accessibilityRole="button" style={{ backgroundColor: colors.bg, borderRadius: radius.md, paddingVertical: 8, paddingHorizontal: spacing.md }}>
+              <Text variant="small" style={{ fontWeight: '700' }}>/{r.title}</Text>
+              <Text variant="caption" muted numberOfLines={1}>{r.text}</Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
       {pending ? (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, backgroundColor: colors.bg, borderRadius: radius.md, padding: spacing.sm, marginBottom: spacing.sm }}>
           {pending.mediaType === 'image' ? (
@@ -180,6 +203,9 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
         <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: spacing.sm }}>
           <Pressable onPress={() => setAttachOpen(true)} hitSlop={6} accessibilityRole="button" accessibilityLabel="Attach" style={{ height: 44, justifyContent: 'center' }}>
             <Ionicons name="attach" size={28} color={colors.muted} />
+          </Pressable>
+          <Pressable onPress={() => setQuickOpen(true)} hitSlop={6} accessibilityRole="button" accessibilityLabel="Quick replies" style={{ height: 44, justifyContent: 'center' }}>
+            <Ionicons name="flash-outline" size={24} color={colors.muted} />
           </Pressable>
           <TextInput
             value={text}
@@ -227,6 +253,7 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
         </View>
       )}
 
+      <QuickReplyPicker visible={quickOpen} replies={quick.replies} loaded={quick.loaded} onPick={pickReply} onClose={() => setQuickOpen(false)} />
       <ActionSheet
         visible={attachOpen}
         title="Attach"
