@@ -6,7 +6,8 @@ import { darkColors, lightColors, radius, spacing, fontSize } from './tokens';
 const ThemeContext = createContext(null);
 
 // preference: 'system' (follow the phone) | 'light' | 'dark'
-const apply = (preference) => Appearance.setColorScheme(preference === 'system' ? null : preference);
+// Android's native module rejects null, so "follow the phone" is passed as 'unspecified'.
+const apply = (preference) => Appearance.setColorScheme(preference === 'system' ? 'unspecified' : preference);
 
 export function ThemeProvider({ children }) {
   const scheme = useColorScheme();

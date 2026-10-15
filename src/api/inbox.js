@@ -34,22 +34,3 @@ export function sendMedia(conversationId, { file, mediaType, caption }) {
 
 export const deleteMessage = (conversationId, messageId) =>
   request(`/whatsapp/conversations/${conversationId}/messages/${messageId}`, { method: 'DELETE' });
-
-// Chat status and internal notes. These need the backend-notes-status patch (docs/patches); without it the
-// server answers 404/405 and the app hides the controls.
-// -> { conversation }
-export const getConversation = (conversationId) => request(`/whatsapp/conversations/${conversationId}`);
-
-// status: open | pending | resolved | closed -> { conversation }
-export const setConversationStatus = (conversationId, status) =>
-  request(`/whatsapp/conversations/${conversationId}/status`, { method: 'PUT', body: { status } });
-
-// -> { notes: [{ id, body, created_at, author: { id, name } }] } newest first
-export const listNotes = (conversationId) => request(`/whatsapp/conversations/${conversationId}/notes`);
-
-// -> { note }
-export const addNote = (conversationId, body) =>
-  request(`/whatsapp/conversations/${conversationId}/notes`, { method: 'POST', body: { body } });
-
-export const deleteNote = (conversationId, noteId) =>
-  request(`/whatsapp/conversations/${conversationId}/notes/${noteId}`, { method: 'DELETE' });
