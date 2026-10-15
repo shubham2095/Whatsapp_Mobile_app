@@ -11,7 +11,9 @@ Built with **Expo SDK 57**, **React Native 0.86**, **Expo Router** and plain **J
 
 - **Inbox**: chat list with search, Open / Hot / Pinned filters, agent filter and unread badges. Chat screen with text,
   photos, videos, documents, voice notes, approved templates for chats outside the 24-hour window, delete message,
-  message info (sent / delivered / read times), chat transfer to a teammate, pin chats.
+  message info (sent / delivered / read times), chat transfer to a teammate, pin chats, quick replies with `/`
+  shortcuts, search inside a chat, chat status (Open / Pending / Resolved / Closed) and internal notes (these two need
+  [`docs/backend-chat-status-notes.md`](docs/backend-chat-status-notes.md) on the server).
 - **Contacts**: search, hot / blocked / opted-out filters, add and edit, import from the phone book or a CSV file,
   hot list with AI priority, black list.
 - **Campaigns and bulk send**: create, schedule, start, pause and cancel campaigns, per-recipient status, send one
