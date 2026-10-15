@@ -13,8 +13,21 @@ import { TransferSheet } from '@/features/inbox/TransferSheet';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
 import { MessageInfoSheet } from '@/features/inbox/MessageInfoSheet';
 import { MessageSearch } from '@/features/inbox/MessageSearch';
+import { ChatStatusBar } from '@/features/inbox/ChatStatusBar';
+import { NoteBubble } from '@/features/inbox/NoteBubble';
+import { NoteSheet } from '@/features/inbox/NoteSheet';
 import { useOutbox } from '@/features/inbox/useOutbox';
-import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
+import {
+  STATUSES,
+  isMissingOnServer,
+  useConversation,
+  useDeleteMessage,
+  useDeleteNote,
+  useMarkRead,
+  useMessages,
+  useNotes,
+  useSetStatus,
+} from '@/features/inbox/hooks';
 import { formatDayLabel, isSameDay } from '@/lib/format';
 import { can } from '@/lib/permissions';
 import { useNow } from '@/lib/useNow';
@@ -71,7 +84,13 @@ export default function Chat() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [infoFor, setInfoFor] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
   const listRef = useRef(null);
+  const conversation = useConversation(id);
+  const notesQuery = useNotes(id);
+  const setStatus = useSetStatus(id);
+  const deleteNote = useDeleteNote(id);
 
   // Suppress banners for this chat while it is on screen and clear any already in the shade.
   useEffect(() => {
@@ -99,14 +118,43 @@ export default function Chat() {
   // Customers can be answered freely for 24 hours after their last message.
   const windowEndsAt = latestInbound ? new Date(latestInbound.created_at).getTime() + WINDOW_MS : null;
 
+  // Internal notes sit in the timeline between the messages. Older servers have no notes: then there are none.
+  const notes = notesQuery.data;
+  const timeline = useMemo(() => {
+    if (!notes || notes.length === 0) return messages;
+    const merged = [...messages, ...notes.map((n) => ({ ...n, _note: true }))];
+    return merged.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  }, [messages, notes]);
+
   // Messages still being sent come first (newest first, like the chat list).
-  const listData = useMemo(() => [...outbox.items, ...messages], [outbox.items, messages]);
+  const listData = useMemo(() => [...outbox.items, ...timeline], [outbox.items, timeline]);
 
   const canReply = can(user, 'conversations.reply');
   const canDelete = can(user, 'whatsapp.manage');
+  const statusAvailable = can(user, 'conversations.status') && !isMissingOnServer(conversation.error);
+  const notesAvailable = can(user, 'conversations.note') && notes !== undefined && !isMissingOnServer(notesQuery.error);
 
   const actions = [];
-  if (selected?._local) {
+  if (selected?._note) {
+    const target = selected;
+    actions.push({ label: 'Copy text', icon: 'copy-outline', onPress: () => { Clipboard.setStringAsync(target.body); toast.show('Copied'); } });
+    if (notesAvailable && (target.author?.id === user.id || canDelete)) {
+      actions.push({
+        label: 'Delete note',
+        icon: 'trash-outline',
+        danger: true,
+        onPress: () =>
+          Alert.alert('Delete note', 'This removes the note for everyone on your team.', [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Delete',
+              style: 'destructive',
+              onPress: () => deleteNote.mutate(target.id, { onSuccess: () => toast.show('Note deleted'), onError: (e) => Alert.alert('Could not delete', e.message) }),
+            },
+          ]),
+      });
+    }
+  } else if (selected?._local) {
     const target = selected;
     actions.push({ label: 'Send again', icon: 'refresh-outline', onPress: () => outbox.retry(target.id) });
     actions.push({ label: 'Discard', icon: 'trash-outline', danger: true, onPress: () => outbox.discard(target.id) });
@@ -114,10 +162,10 @@ export default function Chat() {
     const target = selected;
     actions.push({ label: 'Message info', icon: 'information-circle-outline', onPress: () => setInfoFor(target) });
   }
-  if (selected?.body) {
+  if (selected?.body && !selected._note) {
     actions.push({ label: 'Copy text', icon: 'copy-outline', onPress: () => { Clipboard.setStringAsync(selected.body); toast.show('Copied'); } });
   }
-  if (selected && canDelete) {
+  if (selected && !selected._note && canDelete) {
     actions.push({
       label: 'Delete message',
       icon: 'trash-outline',
@@ -138,6 +186,19 @@ export default function Chat() {
   const pickMessage = useCallback((m) => {
     if (!(m._local && m.status === 'sending')) setSelected(m);
   }, []);
+
+  const currentStatus = conversation.data?.status;
+  const statusActions = STATUSES.map((s) => ({
+    label: s.label,
+    icon: s.key === currentStatus ? 'checkmark' : s.icon,
+    onPress: () => {
+      if (s.key === currentStatus) return;
+      setStatus.mutate(s.key, {
+        onSuccess: () => toast.show(`Marked as ${s.label}`),
+        onError: (e) => Alert.alert('Could not change status', isMissingOnServer(e) ? 'This is not switched on for your server yet.' : e.message),
+      });
+    },
+  }));
   const pickFailed = useCallback((m) => {
     if (m._local && m.status === 'failed') setSelected(m);
   }, []);
@@ -160,7 +221,11 @@ export default function Chat() {
       return (
         <View>
           {startsDay ? <DayChip iso={item.created_at} /> : null}
-          <MessageBubble message={item} onPress={pickFailed} onLongPress={pickMessage} onOpenImage={setViewerUri} />
+          {item._note ? (
+            <NoteBubble note={item} onLongPress={pickMessage} />
+          ) : (
+            <MessageBubble message={item} onPress={pickFailed} onLongPress={pickMessage} onOpenImage={setViewerUri} />
+          )}
         </View>
       );
     },
@@ -175,6 +240,15 @@ export default function Chat() {
           headerRight: () => <HeaderButtons onSearch={() => setSearchOpen(true)} onTransfer={() => setTransferOpen(true)} />,
         }}
       />
+
+      {statusAvailable || notesAvailable ? (
+        <ChatStatusBar
+          status={currentStatus}
+          onChangeStatus={statusAvailable ? () => setStatusOpen(true) : null}
+          onAddNote={notesAvailable ? () => setNoteOpen(true) : null}
+          noteCount={notes?.length ?? 0}
+        />
+      ) : null}
 
       {isError && messages.length === 0 ? (
         <View style={{ flex: 1, padding: spacing.lg }}>
@@ -231,6 +305,8 @@ export default function Chat() {
       <ImageViewer uri={viewerUri} onClose={() => setViewerUri(null)} />
       <MessageInfoSheet message={infoFor} onClose={() => setInfoFor(null)} />
       <TransferSheet visible={transferOpen} conversationId={id} onClose={() => setTransferOpen(false)} />
+      <NoteSheet visible={noteOpen} conversationId={id} onClose={() => setNoteOpen(false)} onSaved={() => toast.show('Note saved')} />
+      <ActionSheet visible={statusOpen} title="Chat status" actions={statusActions} onClose={() => setStatusOpen(false)} />
       <ActionSheet visible={!!selected && actions.length > 0} actions={actions} onClose={() => setSelected(null)} />
     </KeyboardAvoidingView>
   );

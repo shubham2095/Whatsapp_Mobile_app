@@ -13,6 +13,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 const FILTERS = [
   { key: 'all', label: 'All' },
   { key: 'open', label: 'Open' },
+  { key: 'resolved', label: 'Resolved' },
   { key: 'hot', label: 'Hot' },
   { key: 'pinned', label: 'Pinned' },
 ];
@@ -34,7 +35,7 @@ export default function InboxTab() {
   }, [input]);
 
   // "Hot" and "Pinned" are not server statuses: fetch everything and filter here (as the web app does).
-  const query = useConversations({ status: filter === 'open' ? 'open' : undefined, search });
+  const query = useConversations({ status: filter === 'open' || filter === 'resolved' ? filter : undefined, search });
   const { data, isLoading, isError, error, refetch, isRefetching, fetchNextPage, hasNextPage, isFetchingNextPage } = query;
 
   const all = useMemo(() => data?.pages.flatMap((p) => p.conversations) ?? [], [data]);

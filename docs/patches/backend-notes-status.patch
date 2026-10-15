@@ -1,0 +1,224 @@
+diff --git a/app/Models/Conversation.php b/app/Models/Conversation.php
+index b9b243b..fd4aab1 100644
+--- a/app/Models/Conversation.php
++++ b/app/Models/Conversation.php
+@@ -54,6 +54,11 @@ class Conversation extends Model
+         return $this->hasMany(Message::class);
+     }
+ 
++    public function notes(): HasMany
++    {
++        return $this->hasMany(ConversationNote::class);
++    }
++
+     public function assignments(): HasMany
+     {
+         return $this->hasMany(ConversationAssignment::class);
+diff --git a/app/Models/ConversationNote.php b/app/Models/ConversationNote.php
+new file mode 100644
+index 0000000..3757ff1
+--- /dev/null
++++ b/app/Models/ConversationNote.php
+@@ -0,0 +1,28 @@
++<?php
++
++namespace App\Models;
++
++use App\Support\Concerns\HasUuid;
++use App\Support\Scopes\BelongsToTenant;
++use Illuminate\Database\Eloquent\Factories\HasFactory;
++use Illuminate\Database\Eloquent\Model;
++use Illuminate\Database\Eloquent\Relations\BelongsTo;
++use Illuminate\Database\Eloquent\SoftDeletes;
++
++/** An internal note on a conversation. Seen by the team only, never sent to the customer. */
++class ConversationNote extends Model
++{
++    use BelongsToTenant, HasFactory, HasUuid, SoftDeletes;
++
++    protected $fillable = ['tenant_id', 'conversation_id', 'user_id', 'body'];
++
++    public function conversation(): BelongsTo
++    {
++        return $this->belongsTo(Conversation::class);
++    }
++
++    public function author(): BelongsTo
++    {
++        return $this->belongsTo(User::class, 'user_id');
++    }
++}
+diff --git a/app/Modules/WhatsApp/Controllers/InboxController.php b/app/Modules/WhatsApp/Controllers/InboxController.php
+index c770305..2aebdfc 100644
+--- a/app/Modules/WhatsApp/Controllers/InboxController.php
++++ b/app/Modules/WhatsApp/Controllers/InboxController.php
+@@ -5,6 +5,7 @@ namespace App\Modules\WhatsApp\Controllers;
+ use App\Http\Controllers\Controller;
+ use App\Models\Contact;
+ use App\Models\Conversation;
++use App\Models\ConversationNote;
+ use App\Models\Message;
+ use App\Models\MessageAttachment;
+ use App\Modules\WhatsApp\Resources\ConversationResource;
+@@ -93,6 +94,99 @@ class InboxController extends Controller
+         ]);
+     }
+ 
++    public function show(string $conversationUuid): JsonResponse
++    {
++        $this->authorize('conversations.view');
++
++        $conversation = Conversation::where('uuid', $conversationUuid)
++            ->with(['contact', 'phoneNumber', 'assignedAgent'])
++            ->firstOrFail();
++        $this->guardConversationAccess($conversation);
++
++        return $this->ok(['conversation' => new ConversationResource($conversation)]);
++    }
++
++    /** Move a chat between open, pending, resolved and closed. */
++    public function updateStatus(Request $request, string $conversationUuid): JsonResponse
++    {
++        $this->authorize('conversations.status');
++
++        $conversation = Conversation::where('uuid', $conversationUuid)->firstOrFail();
++        $this->guardConversationAccess($conversation);
++
++        $data = $request->validate([
++            'status' => ['required', 'in:open,pending,resolved,closed'],
++        ]);
++
++        $conversation->update(['status' => $data['status']]);
++
++        return $this->ok([
++            'conversation' => new ConversationResource($conversation->load(['contact', 'phoneNumber', 'assignedAgent'])),
++        ]);
++    }
++
++    private function noteToArray(ConversationNote $note): array
++    {
++        return [
++            'id' => $note->uuid,
++            'body' => $note->body,
++            'created_at' => $note->created_at?->toIso8601String(),
++            'author' => $note->author ? ['id' => $note->author->uuid, 'name' => $note->author->name] : null,
++        ];
++    }
++
++    /** Internal notes: visible to the team only, never sent to the customer. */
++    public function notes(string $conversationUuid): JsonResponse
++    {
++        $this->authorize('conversations.view');
++
++        $conversation = Conversation::where('uuid', $conversationUuid)->firstOrFail();
++        $this->guardConversationAccess($conversation);
++
++        $notes = $conversation->notes()->with('author')->orderByDesc('created_at')->limit(200)->get();
++
++        return $this->ok(['notes' => $notes->map(fn (ConversationNote $n) => $this->noteToArray($n))->values()]);
++    }
++
++    public function addNote(Request $request, string $conversationUuid): JsonResponse
++    {
++        $this->authorize('conversations.note');
++
++        $conversation = Conversation::where('uuid', $conversationUuid)->firstOrFail();
++        $this->guardConversationAccess($conversation);
++
++        $data = $request->validate([
++            'body' => ['required', 'string', 'max:2000'],
++        ]);
++
++        $note = ConversationNote::create([
++            'tenant_id' => $conversation->tenant_id,
++            'conversation_id' => $conversation->id,
++            'user_id' => $request->user()->id,
++            'body' => trim($data['body']),
++        ]);
++
++        return $this->ok(['note' => $this->noteToArray($note->load('author'))]);
++    }
++
++    public function deleteNote(string $conversationUuid, string $noteUuid): JsonResponse
++    {
++        $this->authorize('conversations.note');
++
++        $conversation = Conversation::where('uuid', $conversationUuid)->firstOrFail();
++        $this->guardConversationAccess($conversation);
++        $note = $conversation->notes()->where('uuid', $noteUuid)->firstOrFail();
++
++        // Writers can remove their own notes; managers can remove anyone's.
++        if ($note->user_id !== auth()->id() && ! auth()->user()->can('whatsapp.manage')) {
++            abort(403, 'You can only delete your own notes.');
++        }
++
++        $note->delete();
++
++        return $this->ok(['message' => 'Note deleted.']);
++    }
++
+     public function markRead(Request $request, string $conversationUuid): JsonResponse
+     {
+         $this->authorize('conversations.view');
+@@ -291,4 +385,4 @@ class InboxController extends Controller
+             ['Content-Type' => $attachment->mime_type]
+         );
+     }
+-}
+\ No newline at end of file
++}
+\ No newline at end of file
+diff --git a/database/migrations/2026_01_01_000156_create_conversation_notes_table.php b/database/migrations/2026_01_01_000156_create_conversation_notes_table.php
+new file mode 100644
+index 0000000..9ae4068
+--- /dev/null
++++ b/database/migrations/2026_01_01_000156_create_conversation_notes_table.php
+@@ -0,0 +1,32 @@
++<?php
++
++use Illuminate\Database\Migrations\Migration;
++use Illuminate\Database\Schema\Blueprint;
++use Illuminate\Support\Facades\Schema;
++
++/**
++ * Internal notes on a conversation (team-only, never sent through WhatsApp).
++ */
++return new class extends Migration
++{
++    public function up(): void
++    {
++        Schema::create('conversation_notes', function (Blueprint $table) {
++            $table->id();
++            $table->uuid('uuid')->unique();
++            $table->foreignId('tenant_id')->constrained('tenants')->cascadeOnDelete();
++            $table->foreignId('conversation_id')->constrained('conversations')->cascadeOnDelete();
++            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
++            $table->text('body');
++            $table->timestamps();
++            $table->softDeletes();
++
++            $table->index(['conversation_id', 'created_at']);
++        });
++    }
++
++    public function down(): void
++    {
++        Schema::dropIfExists('conversation_notes');
++    }
++};
+diff --git a/routes/modules/whatsapp.php b/routes/modules/whatsapp.php
+index 9056b9f..046f90f 100644
+--- a/routes/modules/whatsapp.php
++++ b/routes/modules/whatsapp.php
+@@ -28,6 +28,11 @@ Route::prefix('whatsapp')->group(function () {
+ 
+     // Inbox
+     Route::get('/conversations', [InboxController::class, 'conversations']);
++    Route::get('/conversations/{conversation}', [InboxController::class, 'show']);
++    Route::put('/conversations/{conversation}/status', [InboxController::class, 'updateStatus']);
++    Route::get('/conversations/{conversation}/notes', [InboxController::class, 'notes']);
++    Route::post('/conversations/{conversation}/notes', [InboxController::class, 'addNote']);
++    Route::delete('/conversations/{conversation}/notes/{note}', [InboxController::class, 'deleteNote']);
+     Route::get('/conversations/{conversation}/messages', [InboxController::class, 'messages']);
+     Route::post('/conversations/{conversation}/mark-read', [InboxController::class, 'markRead']);
+     Route::post('/conversations/{conversation}/send', [InboxController::class, 'send']);

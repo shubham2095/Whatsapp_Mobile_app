@@ -1,9 +1,16 @@
 import { memo } from 'react';
 import { Pressable, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Avatar, Text } from '@/components/ui';
+import { Avatar, Badge, Text } from '@/components/ui';
 import { formatListTime } from '@/lib/format';
 import { useTheme } from '@/theme/ThemeProvider';
+
+// Open chats need no badge; the others say where they stand.
+const STATUS_BADGE = {
+  pending: { label: 'Pending', tone: 'warning' },
+  resolved: { label: 'Resolved', tone: 'neutral' },
+  closed: { label: 'Closed', tone: 'muted' },
+};
 
 export function contactLabel(conversation) {
   const c = conversation.contact;
@@ -40,6 +47,7 @@ export const ConversationRow = memo(function ConversationRow({ conversation, onP
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
           <Text numberOfLines={1} style={{ flexShrink: 1, fontWeight: unread ? '700' : '600' }}>{name}</Text>
           {contact?.is_hot ? <Ionicons name="flame" size={15} color={colors.accent} /> : null}
+          {STATUS_BADGE[conversation.status] ? <Badge label={STATUS_BADGE[conversation.status].label} tone={STATUS_BADGE[conversation.status].tone} /> : null}
           <View style={{ flex: 1 }} />
           {pinned ? <Ionicons name="pin" size={13} color={colors.muted} /> : null}
           <Text variant="caption" color={unread ? colors.primary : colors.muted}>{formatListTime(conversation.last_message_at)}</Text>
