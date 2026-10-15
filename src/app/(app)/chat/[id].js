@@ -12,6 +12,7 @@ import { ImageViewer } from '@/features/inbox/ImageViewer';
 import { TransferSheet } from '@/features/inbox/TransferSheet';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
 import { MessageInfoSheet } from '@/features/inbox/MessageInfoSheet';
+import { MessageSearch } from '@/features/inbox/MessageSearch';
 import { useOutbox } from '@/features/inbox/useOutbox';
 import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
 import { formatDayLabel, isSameDay } from '@/lib/format';
@@ -30,11 +31,16 @@ function HeaderTitle({ name, phone }) {
   );
 }
 
-function TransferButton({ onPress }) {
+function HeaderButtons({ onSearch, onTransfer }) {
   return (
-    <Pressable onPress={onPress} hitSlop={10} accessibilityRole="button" accessibilityLabel="Transfer chat">
-      <Ionicons name="swap-horizontal" size={24} color="#fff" />
-    </Pressable>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+      <Pressable onPress={onSearch} hitSlop={10} accessibilityRole="button" accessibilityLabel="Search in chat">
+        <Ionicons name="search" size={22} color="#fff" />
+      </Pressable>
+      <Pressable onPress={onTransfer} hitSlop={10} accessibilityRole="button" accessibilityLabel="Transfer chat">
+        <Ionicons name="swap-horizontal" size={24} color="#fff" />
+      </Pressable>
+    </View>
   );
 }
 
@@ -64,6 +70,8 @@ export default function Chat() {
   const [selected, setSelected] = useState(null);
   const [transferOpen, setTransferOpen] = useState(false);
   const [infoFor, setInfoFor] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const listRef = useRef(null);
 
   // Suppress banners for this chat while it is on screen and clear any already in the shade.
   useEffect(() => {
@@ -134,6 +142,16 @@ export default function Chat() {
     if (m._local && m.status === 'failed') setSelected(m);
   }, []);
 
+  // Jump to a message found by the search. The list stays mounted underneath the search view.
+  const jumpTo = useCallback(
+    (message) => {
+      setSearchOpen(false);
+      const index = listData.findIndex((m) => m.id === message.id);
+      if (index >= 0) setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true }), 50);
+    },
+    [listData],
+  );
+
   const renderItem = useCallback(
     ({ item, index }) => {
       // Inverted list: the next index is the OLDER message, so a day chip goes above the first of each day.
@@ -154,7 +172,7 @@ export default function Chat() {
       <Stack.Screen
         options={{
           headerTitle: () => <HeaderTitle name={name} phone={phone} />,
-          headerRight: () => <TransferButton onPress={() => setTransferOpen(true)} />,
+          headerRight: () => <HeaderButtons onSearch={() => setSearchOpen(true)} onTransfer={() => setTransferOpen(true)} />,
         }}
       />
 
@@ -169,8 +187,13 @@ export default function Chat() {
         <ChatSkeleton />
       ) : (
         <FlatList
+          ref={listRef}
           inverted
           data={listData}
+          onScrollToIndexFailed={({ index, averageItemLength }) => {
+            listRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: false });
+            setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true }), 100);
+          }}
           keyExtractor={(m) => m.id}
           renderItem={renderItem}
           onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
@@ -193,6 +216,17 @@ export default function Chat() {
           <Text variant="small" muted style={{ textAlign: 'center' }}>You do not have permission to reply in this inbox.</Text>
         </View>
       )}
+
+      {searchOpen ? (
+        <MessageSearch
+          messages={messages}
+          hasNextPage={hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={fetchNextPage}
+          onPick={jumpTo}
+          onClose={() => setSearchOpen(false)}
+        />
+      ) : null}
 
       <ImageViewer uri={viewerUri} onClose={() => setViewerUri(null)} />
       <MessageInfoSheet message={infoFor} onClose={() => setInfoFor(null)} />
