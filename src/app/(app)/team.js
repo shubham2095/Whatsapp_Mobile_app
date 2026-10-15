@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Avatar, Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { ActionSheet, Avatar, Badge, Banner, EmptyState, Fab, ListSkeleton, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useRemoveMember, useTeam, useToggleMember } from '@/features/team/hooks';
 import { formatListTime } from '@/lib/format';
@@ -97,14 +97,7 @@ export default function Team() {
       <ActionSheet visible={!!menuFor && menu.length > 0} title={menuFor?.name} actions={menu} onClose={() => setMenuFor(null)} />
 
       {canInvite ? (
-        <Pressable
-          onPress={() => router.push('/team-form')}
-          accessibilityRole="button"
-          accessibilityLabel="Add team member"
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="person-add" size={26} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => router.push('/team-form')} label="Add team member" icon="person-add" />
       ) : null}
     </View>
   );

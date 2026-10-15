@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Appearance, useColorScheme } from 'react-native';
 import { getThemePreference, saveThemePreference } from '@/lib/storage';
-import { darkColors, lightColors, radius, spacing, fontSize } from './tokens';
+import { darkColors, darkShadows, fontSize, lightColors, lightShadows, radius, spacing, touch } from './tokens';
 
 const ThemeContext = createContext(null);
 
@@ -34,6 +34,8 @@ export function ThemeProvider({ children }) {
       radius,
       spacing,
       fontSize,
+      touch,
+      shadows: scheme === 'dark' ? darkShadows : lightShadows,
       preference,
       setPreference,
     }),

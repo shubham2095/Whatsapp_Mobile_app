@@ -17,7 +17,15 @@ export function ChipSelect({ label, options, value, onChange }) {
               onPress={() => onChange(o.value)}
               accessibilityRole="radio"
               accessibilityState={{ selected: active }}
-              style={{ paddingHorizontal: spacing.md, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: active ? colors.primary : colors.chipBg }}
+              hitSlop={4}
+              style={({ pressed }) => ({
+                minHeight: 36,
+                justifyContent: 'center',
+                paddingHorizontal: spacing.lg,
+                borderRadius: radius.pill,
+                backgroundColor: active ? colors.primary : colors.chipBg,
+                opacity: pressed ? 0.85 : 1,
+              })}
             >
               <Text variant="small" style={{ color: active ? '#fff' : colors.primary, fontWeight: '600' }}>{o.label}</Text>
             </Pressable>

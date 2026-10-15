@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Banner, ChipSelect, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { Banner, ChipSelect, EmptyState, Fab, ListSkeleton, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { BulkSendCard } from '@/features/campaigns/BulkSendCard';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
@@ -53,7 +53,7 @@ function PagedList({ query, items, renderItem, keyExtractor, empty }) {
 
 export default function CampaignsTab() {
   const user = useUser();
-  const { colors, radius, spacing } = useTheme();
+  const { colors, spacing } = useTheme();
   const canManage = can(user, 'whatsapp.manage'); // the backend requires it for bulk sends and for creating/starting campaigns
   const [tab, setTab] = useState('campaigns');
   const [status, setStatus] = useState('');
@@ -129,14 +129,7 @@ export default function CampaignsTab() {
       )}
 
       {canManage ? (
-        <Pressable
-          onPress={() => router.push(tab === 'campaigns' ? '/campaign-form' : '/bulk-form')}
-          accessibilityRole="button"
-          accessibilityLabel={tab === 'campaigns' ? 'New campaign' : 'New bulk send'}
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: radius.pill, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="add" size={30} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => router.push(tab === 'campaigns' ? '/campaign-form' : '/bulk-form')} label={tab === 'campaigns' ? 'New campaign' : 'New bulk send'} />
       ) : null}
     </View>
   );

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge, Banner, Button, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { Badge, Banner, Button, EmptyState, Fab, ListSkeleton, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useSyncTemplates, useTemplates } from '@/features/templates/hooks';
 import { CATEGORY_LABEL, CATEGORY_TONE, STATUS_TONE } from '@/features/templates/meta';
@@ -133,14 +133,7 @@ export default function Templates() {
       )}
 
       {canCreate ? (
-        <Pressable
-          onPress={() => router.push('/template-form')}
-          accessibilityRole="button"
-          accessibilityLabel="Create template"
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="add" size={30} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => router.push('/template-form')} label="Create template" />
       ) : null}
     </View>
   );

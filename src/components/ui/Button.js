@@ -1,35 +1,52 @@
-import { ActivityIndicator, Pressable } from 'react-native';
+import { ActivityIndicator, Pressable, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Text } from './Text';
 
-// variant: primary (orange CTA) | secondary (teal) | outline | danger | ghost
-export function Button({ title, onPress, variant = 'primary', loading = false, disabled = false, style }) {
-  const { colors, radius, spacing } = useTheme();
-  const bg = { primary: colors.accent, secondary: colors.primary, danger: colors.danger, outline: 'transparent', ghost: 'transparent' }[variant];
-  const fg = variant === 'outline' || variant === 'ghost' ? colors.primary : '#fff';
+const SIZES = { sm: { height: 40, px: 14, text: 'small' }, md: { height: 48, px: 20, text: 'body' }, lg: { height: 54, px: 24, text: 'body' } };
+
+// variant: primary (orange CTA) | secondary (teal) | soft (tinted) | outline | danger | ghost
+// size: sm | md | lg. icon: optional Ionicons name shown before the title.
+export function Button({ title, onPress, variant = 'primary', size = 'md', icon, loading = false, disabled = false, style }) {
+  const { colors, radius } = useTheme();
+  const s = SIZES[size];
+  const bg = { primary: colors.accent, secondary: colors.primary, soft: colors.chipBg, danger: colors.danger, outline: 'transparent', ghost: 'transparent' }[variant];
+  const fg = variant === 'outline' || variant === 'ghost' || variant === 'soft' ? colors.primary : '#fff';
   const off = disabled || loading;
+  const rippleColor = fg === '#fff' ? 'rgba(255,255,255,0.25)' : colors.primary + '22';
   return (
     <Pressable
       onPress={onPress}
       disabled={off}
       accessibilityRole="button"
+      accessibilityState={{ disabled: off, busy: loading }}
+      android_ripple={{ color: rippleColor }}
       style={({ pressed }) => [
         {
           backgroundColor: bg,
           borderColor: variant === 'outline' ? colors.primary : 'transparent',
           borderWidth: 1.5,
           borderRadius: radius.md,
-          paddingVertical: spacing.md,
-          paddingHorizontal: spacing.lg,
+          paddingHorizontal: s.px,
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 48,
-          opacity: off ? 0.55 : pressed ? 0.85 : 1,
+          minHeight: s.height,
+          paddingVertical: 8,
+          overflow: 'hidden',
+          opacity: off ? 0.5 : pressed ? 0.9 : 1,
+          transform: [{ scale: pressed && !off ? 0.98 : 1 }],
         },
         style,
       ]}
     >
-      {loading ? <ActivityIndicator color={fg} /> : <Text style={{ color: fg, fontWeight: '600' }}>{title}</Text>}
+      {loading ? (
+        <ActivityIndicator color={fg} />
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {icon ? <Ionicons name={icon} size={size === 'sm' ? 17 : 20} color={fg} /> : null}
+          <Text variant={s.text} style={{ color: fg, fontWeight: '600' }}>{title}</Text>
+        </View>
+      )}
     </Pressable>
   );
 }

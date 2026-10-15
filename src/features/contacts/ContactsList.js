@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, TextInpu
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Banner, Button, EmptyState, Input, ListSkeleton, Sheet, Text } from '@/components/ui';
+import { ActionSheet, Banner, Button, EmptyState, Fab, Input, ListSkeleton, Sheet, Text } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { can } from '@/lib/permissions';
@@ -241,7 +241,8 @@ export function ContactsList({ fixedFilter }) {
             <EmptyState
               icon={activeFilter === 'hot' ? 'flame-outline' : 'people-outline'}
               title={search ? 'No matching contacts' : activeFilter === 'hot' ? 'No hot leads yet' : 'No contacts yet'}
-              message={search ? 'Try a different name, number or tag.' : activeFilter === 'hot' ? 'Customers who show buying interest will appear here.' : canCreate ? 'Tap + to add a contact or import from your phone.' : undefined}
+              message={search ? 'Try a different name, number or tag.' : activeFilter === 'hot' ? 'Customers who show buying interest will appear here.' : canCreate ? 'Add one by one, or import from your phone or a CSV file.' : undefined}
+              action={!search && activeFilter === 'all' && canCreate ? { label: 'Add contact', icon: 'person-add-outline', onPress: () => router.push('/contact-form') } : undefined}
             />
           }
           contentContainerStyle={contacts.length === 0 ? { flexGrow: 1 } : { paddingBottom: 96 }}
@@ -249,14 +250,7 @@ export function ContactsList({ fixedFilter }) {
       )}
 
       {menu.length > 0 && !selecting ? (
-        <Pressable
-          onPress={() => setMenuOpen(true)}
-          accessibilityRole="button"
-          accessibilityLabel="Add or import contacts"
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="add" size={30} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => setMenuOpen(true)} label="Add or import contacts" />
       ) : null}
       <ActionSheet visible={menuOpen} title="Contacts" actions={menu} onClose={() => setMenuOpen(false)} />
       <ActionSheet visible={actionsOpen} title={`${picked.length} selected`} actions={actions} onClose={() => setActionsOpen(false)} />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { ActionSheet, Badge, Banner, EmptyState, Fab, ListSkeleton, Text } from '@/components/ui';
 import { useAdminPlans, useDeletePlan, useTogglePlan } from '@/features/admin/hooks';
 import { FEATURE_LABELS, LIMIT_LABELS, showLimit } from '@/features/billing/planMeta';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -86,14 +86,7 @@ export default function AdminPlans() {
 
       <ActionSheet visible={!!menuFor} title={menuFor?.name} actions={menu} onClose={() => setMenuFor(null)} />
 
-      <Pressable
-        onPress={() => router.push('/plan-form')}
-        accessibilityRole="button"
-        accessibilityLabel="Create plan"
-        style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-      >
-        <Ionicons name="add" size={30} color="#fff" />
-      </Pressable>
+      <Fab onPress={() => router.push('/plan-form')} label="Create plan" />
     </View>
   );
 }

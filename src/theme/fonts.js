@@ -33,4 +33,4 @@ export function familyFor(weight) {
 
 // For raw React Native components (header titles, tab labels) that do not go through the shared Text.
 export const headerTitleFont = { fontFamily: FAMILY[700], fontWeight: 'normal' };
-export const tabLabelFont = { fontFamily: FAMILY[600], fontWeight: 'normal' };
+export const tabLabelFont = { fontFamily: FAMILY[600], fontWeight: 'normal', fontSize: 11 };

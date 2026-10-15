@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, Switch, View } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import { Badge, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { Badge, Banner, EmptyState, Fab, ListSkeleton, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useChatbots, useToggleChatbot } from '@/features/automation/hooks';
 import { can, hasFeature, planAllows } from '@/lib/permissions';
@@ -71,14 +70,7 @@ export default function Chatbots() {
       />
 
       {canManage ? (
-        <Pressable
-          onPress={() => router.push('/chatbot-form')}
-          accessibilityRole="button"
-          accessibilityLabel="Create chatbot"
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="add" size={30} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => router.push('/chatbot-form')} label="Create chatbot" />
       ) : null}
     </View>
   );

@@ -3,7 +3,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, View } f
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Badge, Banner, Button, Card, EmptyState, Input, Sheet, Text } from '@/components/ui';
+import { ActionSheet, Badge, Banner, Button, Card, EmptyState, Fab, Input, Sheet, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import {
   useConnectPage,
@@ -191,14 +191,7 @@ export default function Social() {
       </Sheet>
 
       {canPost && conn ? (
-        <Pressable
-          onPress={() => router.push('/social-post-form')}
-          accessibilityRole="button"
-          accessibilityLabel="New post"
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="add" size={30} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => router.push('/social-post-form')} label="New post" />
       ) : null}
     </View>
   );

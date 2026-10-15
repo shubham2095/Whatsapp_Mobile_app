@@ -13,4 +13,5 @@ export { ChipSelect } from './ChipSelect';
 export { CheckList } from './CheckList';
 export { ProgressBar } from './ProgressBar';
 export { StatCard } from './StatCard';
+export { Fab } from './Fab';
 export { Skeleton, ListSkeleton, ChatSkeleton } from './Skeleton';

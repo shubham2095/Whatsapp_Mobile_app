@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Alert, FlatList, Pressable, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { Button, EmptyState, Input, Sheet, Text } from '@/components/ui';
+import { Button, EmptyState, Fab, Input, Sheet, Text } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useQuickReplies } from '@/features/inbox/quickReplies';
@@ -69,14 +68,7 @@ export default function QuickReplies() {
         )}
       />
 
-      <Pressable
-        onPress={() => open(null)}
-        accessibilityRole="button"
-        accessibilityLabel="Add quick reply"
-        style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-      >
-        <Ionicons name="add" size={30} color="#fff" />
-      </Pressable>
+      <Fab onPress={() => open(null)} label="Add quick reply" />
 
       <Sheet visible={!!editing} title={editing?.id ? 'Edit quick reply' : 'New quick reply'} onClose={() => setEditing(null)}>
         {editing ? (

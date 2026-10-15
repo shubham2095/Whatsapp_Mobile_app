@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge, Banner, ChipSelect, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { Badge, Banner, ChipSelect, EmptyState, Fab, ListSkeleton, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { PRIORITY_TONE, STATUSES, STATUS_TONE, statusLabel } from '@/features/support/meta';
 import { useTickets } from '@/features/support/hooks';
@@ -93,14 +93,7 @@ export default function Support() {
       )}
 
       {admin ? null : (
-        <Pressable
-          onPress={() => router.push('/support-form')}
-          accessibilityRole="button"
-          accessibilityLabel="New ticket"
-          style={{ position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } }}
-        >
-          <Ionicons name="add" size={30} color="#fff" />
-        </Pressable>
+        <Fab onPress={() => router.push('/support-form')} label="New ticket" />
       )}
     </View>
   );
