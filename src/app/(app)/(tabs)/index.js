@@ -6,6 +6,7 @@ import { Badge, Banner, Button, Card, StatCard, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { AdminDashboard } from '@/features/admin/AdminDashboard';
 import { useDashboardStats } from '@/features/analytics/hooks';
+import { UsageMeters } from '@/features/billing/UsageMeters';
 import { useNumbers } from '@/features/whatsapp/hooks';
 import { can, hasFeature, isPlanExpired, roleLabel } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -31,6 +32,8 @@ function WorkspaceDashboard() {
     setRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ['analytics'] });
     await queryClient.invalidateQueries({ queryKey: ['wa-numbers'] });
+    // Plan usage counts.
+    await Promise.all(['contacts', 'campaigns', 'templates', 'chatbots'].map((k) => queryClient.invalidateQueries({ queryKey: [k, 'count'] })));
     setRefreshing(false);
   }
 
@@ -87,6 +90,8 @@ function WorkspaceDashboard() {
           {hasFeature(user, 'reports') ? <Button title="Open analytics" variant="outline" onPress={() => router.push('/analytics')} /> : null}
         </>
       ) : null}
+
+      {tenantUser ? <UsageMeters /> : null}
 
       <Card style={{ gap: spacing.sm }}>
         <Text variant="small" muted>Your role</Text>
