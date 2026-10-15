@@ -1,0 +1,94 @@
+diff --git a/app/delete-account/page.tsx b/app/delete-account/page.tsx
+new file mode 100644
+index 0000000..32cc6b0
+--- /dev/null
++++ b/app/delete-account/page.tsx
+@@ -0,0 +1,35 @@
++export default function DeleteAccount() {
++  return (
++    <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 20px", fontFamily: "system-ui, sans-serif", lineHeight: 1.7, color: "#333" }}>
++      <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 8 }}>Delete your Heltog account</h1>
++      <p style={{ color: "#666", marginBottom: 32 }}>Heltog SocialFlow by Heltog Technologies Pvt Ltd</p>
++
++      <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>In the app</h2>
++      <p>Open the Heltog app, go to <strong>More, Profile, Delete account</strong>, enter your password and confirm.</p>
++
++      <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>By email</h2>
++      <p>
++        If you cannot open the app, email{" "}
++        <a href="mailto:heltogtechnologies@gmail.com?subject=Account%20deletion%20request" style={{ color: "#2563eb" }}>heltogtechnologies@gmail.com</a>{" "}
++        from the address you registered with, with the subject &quot;Account deletion request&quot;. We delete the account within 30 days.
++      </p>
++
++      <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>What is deleted</h2>
++      <ul>
++        <li>Your name, email address, phone number and sign-in details.</li>
++        <li>Saved phone notification tokens.</li>
++        <li><strong>Company owners:</strong> the whole company workspace, including contacts, conversations, templates, campaigns and the access of every team member.</li>
++        <li><strong>Agents:</strong> only your own login. Chats and contacts stay with your company.</li>
++      </ul>
++
++      <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>What we keep</h2>
++      <p>Invoices and payment records are kept for the period required by Indian tax and accounting law. Messages stored with Meta (WhatsApp) are governed by Meta&apos;s own policies.</p>
++
++      <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>Related</h2>
++      <ul>
++        <li><a href="/privacy" style={{ color: "#2563eb" }}>Privacy Policy</a></li>
++        <li><a href="/terms" style={{ color: "#2563eb" }}>Terms and Conditions</a></li>
++      </ul>
++    </div>
++  );
++}
+diff --git a/app/privacy/page.tsx b/app/privacy/page.tsx
+index c8a97ee..ee1e707 100644
+--- a/app/privacy/page.tsx
++++ b/app/privacy/page.tsx
+@@ -2,9 +2,9 @@ export default function PrivacyPolicy() {
+   return (
+     <div style={{ maxWidth: 800, margin: "0 auto", padding: "40px 20px", fontFamily: "system-ui, sans-serif", lineHeight: 1.7, color: "#333" }}>
+       <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 8 }}>Privacy Policy</h1>
+-      <p style={{ color: "#666", marginBottom: 32 }}>Last updated: September 12, 2026</p>
++      <p style={{ color: "#666", marginBottom: 32 }}>Last updated: October 15, 2026</p>
+ 
+-      <p>Heltog Technologies Pvt Ltd (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Pizi platform (the &quot;Service&quot;). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service.</p>
++      <p>Heltog Technologies Pvt Ltd (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) operates the Heltog SocialFlow platform, including the Heltog mobile app and the website (the &quot;Service&quot;). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service.</p>
+ 
+       <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>Information we collect</h2>
+       <ul>
+@@ -12,6 +12,9 @@ export default function PrivacyPolicy() {
+         <li><strong>WhatsApp Business data</strong> — WhatsApp Business Account ID, phone number ID, and access tokens (encrypted at rest) when you connect your WhatsApp number.</li>
+         <li><strong>Message data</strong> — messages sent and received through the platform are stored to provide inbox, campaign, and analytics features.</li>
+         <li><strong>Usage data</strong> — pages visited, features used, and device/browser information for improving the Service.</li>
++        <li><strong>Device information (mobile app)</strong> — a push notification token for your phone, so we can alert you about new messages.</li>
++        <li><strong>Photos, videos, files and voice notes (mobile app)</strong> — only the ones you choose to attach to a chat or a social post. The app asks for camera, microphone and photo access when you use those features.</li>
++        <li><strong>Contacts (mobile app)</strong> — your phone&apos;s contacts are read only when you choose &quot;Import from phone contacts&quot;, and only the ones you select are uploaded.</li>
+       </ul>
+ 
+       <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>How we use your information</h2>
+@@ -30,7 +33,7 @@ export default function PrivacyPolicy() {
+       <p>We integrate with Meta (Facebook/WhatsApp) APIs, Razorpay/Stripe for payments, and cloud hosting providers. These services have their own privacy policies.</p>
+ 
+       <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>Data retention</h2>
+-      <p>We retain your data for as long as your account is active. You may request deletion of your account and associated data by contacting us.</p>
++      <p>We retain your data for as long as your account is active. You can delete your account yourself in the app (More, Profile, Delete account) or follow the steps at <a href="/delete-account" style={{ color: "#2563eb" }}>/delete-account</a>. We then remove your personal data and keep only invoices and payment records that the law requires.</p>
+ 
+       <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>Your rights</h2>
+       <p>You have the right to access, update, or delete your personal information. Contact us to exercise these rights.</p>
+diff --git a/app/terms/page.tsx b/app/terms/page.tsx
+index de97713..19b14e5 100644
+--- a/app/terms/page.tsx
++++ b/app/terms/page.tsx
+@@ -4,11 +4,11 @@ export default function TermsAndConditions() {
+       <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 8 }}>Terms and Conditions</h1>
+       <p style={{ color: "#666", marginBottom: 32 }}>Last updated: September 12, 2026</p>
+ 
+-      <p>Welcome to Pizi, a WhatsApp automation platform operated by Heltog Technologies Pvt Ltd (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;). By accessing or using the Service at frontend.heltog.com and its associated APIs, you agree to be bound by these Terms.</p>
++      <p>Welcome to Heltog SocialFlow, a WhatsApp automation platform operated by Heltog Technologies Pvt Ltd (&quot;Company&quot;, &quot;we&quot;, &quot;us&quot;). By accessing or using the Service at frontend.heltog.com, the Heltog mobile app and its associated APIs, you agree to be bound by these Terms.</p>
+ 
+       <h2 style={{ fontSize: 20, fontWeight: 600, marginTop: 32 }}>1. Definitions</h2>
+       <ul>
+-        <li><strong>Service</strong> — the Pizi platform including the web application, APIs, and all related features.</li>
++        <li><strong>Service</strong> — the Heltog SocialFlow platform including the web application, the mobile app, APIs, and all related features.</li>
+         <li><strong>User / You</strong> — any individual or business entity that creates an account on the Service.</li>
+         <li><strong>Subscription</strong> — a paid plan that grants access to specific features and usage limits.</li>
+       </ul>

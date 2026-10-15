@@ -6,7 +6,29 @@ That endpoint does not exist in the Laravel backend yet, so until you add it the
 to support instead. Google Play requires a working in-app deletion path **and** a public web page
 where a user can ask for deletion, so both parts below are needed before you submit to the Play Store.
 
-None of this code has been run. Test it on a copy of the database first.
+## Quick way: apply the ready-made patches
+
+Both patches were made against the exact files in your `whatsapp.zip` and were checked to apply cleanly
+(`git apply --check`). The PHP was syntax-checked with `php -l`, but it has **not been run against your database**,
+so test it on a copy first.
+
+```bash
+# in your Laravel backend repo (the folder that contains app/ and routes/)
+git apply /path/to/heltog-mobile/docs/patches/backend-delete-account.patch
+
+# in your Next.js frontend repo (the folder that contains app/ and package.json)
+git apply /path/to/heltog-mobile/docs/patches/frontend-delete-account.patch
+```
+
+- `backend-delete-account.patch`: the `deleteAccount` method in `AuthController` and its route.
+- `frontend-delete-account.patch`: the new `/delete-account` page, the mobile-app items in the Privacy Policy,
+  and "Pizi" renamed to "Heltog SocialFlow" in the Privacy Policy and Terms.
+
+After applying: deploy the backend (`php artisan route:clear` if routes are cached), rebuild and upload the website,
+then open `https://frontend.heltog.com/delete-account` to check it. The explanations and the full code below are the
+same thing in readable form.
+
+None of this code has been run against real data. Test it on a copy of the database first.
 
 ## 1. Backend: `POST /api/v1/auth/delete-account`
 

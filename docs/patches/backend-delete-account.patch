@@ -1,0 +1,104 @@
+diff --git a/app/Modules/Auth/Controllers/AuthController.php b/app/Modules/Auth/Controllers/AuthController.php
+index 701b35a..af90cf7 100644
+--- a/app/Modules/Auth/Controllers/AuthController.php
++++ b/app/Modules/Auth/Controllers/AuthController.php
+@@ -12,7 +12,9 @@ use App\Modules\Auth\Resources\UserResource;
+ use App\Modules\Auth\Services\AuthService;
+ use Illuminate\Http\JsonResponse;
+ use Illuminate\Http\Request;
++use Illuminate\Support\Facades\DB;
+ use Illuminate\Support\Facades\Hash;
++use Illuminate\Support\Str;
+ use Illuminate\Validation\Rules\Password;
+ 
+ class AuthController extends Controller
+@@ -104,6 +106,77 @@ class AuthController extends Controller
+         return $this->ok(['message' => 'Password changed successfully.']);
+     }
+ 
++    /**
++     * Permanently delete the signed-in account (Google Play requires an in-app way to do this).
++     *  - Agent: their own login is removed and the chats they held become unassigned.
++     *  - Owner: the whole company is removed, the same as the super admin's "Delete company".
++     *  - Super admin: refused.
++     * A wrong password answers 422, never 401: the mobile app signs the user out on any 401.
++     * Invoices and payments are kept (tax law); only personal details are overwritten.
++     */
++    public function deleteAccount(Request $request): JsonResponse
++    {
++        $user = $request->user();
++
++        if ($user->is_super_admin) {
++            return $this->fail('The platform admin account cannot be deleted here.', [], 403);
++        }
++
++        $data = $request->validate([
++            'password' => ['required', 'string'],
++            'delete_company' => ['sometimes', 'boolean'],
++        ]);
++
++        if (! Hash::check($data['password'], $user->password)) {
++            return $this->fail('The password is incorrect.', ['password' => ['The password is incorrect.']], 422);
++        }
++
++        $isOwner = $user->hasRole('tenant-owner');
++        if ($isOwner && ! ($data['delete_company'] ?? false)) {
++            return $this->fail(
++                'Deleting the owner account also deletes the company. Please confirm.',
++                ['delete_company' => ['Confirm that the company will be deleted.']],
++                422,
++            );
++        }
++
++        DB::transaction(function () use ($user, $isOwner) {
++            $people = $isOwner
++                ? \App\Models\User::withoutGlobalScopes()->where('tenant_id', $user->tenant_id)->get()
++                : collect([$user]);
++
++            foreach ($people as $person) {
++                \App\Models\DeviceToken::withoutGlobalScopes()->where('user_id', $person->id)->delete();
++
++                // Remove personal data first: it is gone even if rows are only soft-deleted,
++                // and the email address can be registered again later.
++                $person->forceFill([
++                    'name' => 'Deleted user',
++                    'email' => 'deleted-' . Str::uuid() . '@deleted.invalid',
++                    'phone' => null,
++                    'avatar_url' => null,
++                    'password' => Hash::make(Str::random(40)),
++                ])->saveQuietly();
++            }
++
++            if ($isOwner) {
++                \App\Models\Tenant::find($user->tenant_id)?->delete();
++            } else {
++                \App\Models\Conversation::withoutGlobalScopes()
++                    ->where('assigned_agent_id', $user->id)
++                    ->update(['assigned_agent_id' => null]);
++            }
++
++            foreach ($people as $person) {
++                $person->delete();
++            }
++        });
++
++        auth('api')->logout();
++
++        return $this->ok(['message' => 'Your account has been deleted.']);
++    }
++
+     /** Shape the {user, token, ...} service result for the API envelope. */
+     private function authPayload(array $result): array
+     {
+diff --git a/routes/modules/auth.php b/routes/modules/auth.php
+index 3246bd5..de67523 100644
+--- a/routes/modules/auth.php
++++ b/routes/modules/auth.php
+@@ -26,6 +26,7 @@ Route::prefix('auth')->group(function () {
+         Route::put('/profile', [AuthController::class, 'updateProfile']);
+         Route::post('/change-password', [AuthController::class, 'changePassword']);
+         Route::post('/logout', [AuthController::class, 'logout']);
++        Route::post('/delete-account', [AuthController::class, 'deleteAccount'])->middleware('throttle:5,1');
+         Route::post('/refresh', [AuthController::class, 'refresh']);
+     });
+ });
