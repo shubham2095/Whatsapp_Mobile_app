@@ -56,3 +56,9 @@ export async function saveThemePreference(preference) {
     await SecureStore.setItemAsync(THEME_KEY, preference);
   } catch {}
 }
+
+// The welcome slides are shown once per phone, after the first sign-in.
+export async function getOnboardingSeen() {
+  return (await read('heltog_onboarding_seen')) === '1';
+}
+export const saveOnboardingSeen = () => SecureStore.setItemAsync('heltog_onboarding_seen', '1');

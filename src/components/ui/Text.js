@@ -21,6 +21,7 @@ export function Text({ variant = 'body', muted = false, color, style, ...rest })
   if (custom.fontSize && custom.lineHeight === undefined) custom.lineHeight = Math.round(custom.fontSize * 1.35);
   return (
     <RNText
+      maxFontSizeMultiplier={1.35}
       {...rest}
       style={[
         {

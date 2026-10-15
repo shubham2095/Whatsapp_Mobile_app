@@ -72,7 +72,8 @@ export default function Chat() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [infoFor, setInfoFor] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [scrolledUp, setScrolledUp] = useState(false);
+  // The newest message at the moment you scrolled up; anything above it in the list arrived while you were reading.
+  const [anchorId, setAnchorId] = useState(null);
   const listRef = useRef(null);
 
   // Suppress banners for this chat while it is on screen and clear any already in the shade.
@@ -103,6 +104,9 @@ export default function Chat() {
 
   // Messages still being sent come first (newest first, like the chat list).
   const listData = useMemo(() => [...outbox.items, ...messages], [outbox.items, messages]);
+
+  const anchorIndex = anchorId ? messages.findIndex((m) => m.id === anchorId) : -1;
+  const newSinceScroll = anchorIndex > 0 ? messages.slice(0, anchorIndex).filter((m) => m.direction === 'inbound').length : 0;
 
   const canReply = can(user, 'conversations.reply');
   const canDelete = can(user, 'whatsapp.manage');
@@ -191,7 +195,11 @@ export default function Chat() {
         <View style={{ flex: 1 }}>
         <FlatList
           ref={listRef}
-          onScroll={(e) => setScrolledUp(e.nativeEvent.contentOffset.y > 500)}
+          onScroll={(e) => {
+            const up = e.nativeEvent.contentOffset.y > 500;
+            if (up && anchorId === null) setAnchorId(messages[0]?.id ?? '');
+            else if (!up && anchorId !== null) setAnchorId(null);
+          }}
           scrollEventThrottle={100}
           inverted
           data={listData}
@@ -212,7 +220,7 @@ export default function Chat() {
             </View>
           }
         />
-        {scrolledUp ? <JumpToLatest onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })} /> : null}
+        {anchorId !== null ? <JumpToLatest count={newSinceScroll} onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })} /> : null}
         </View>
       )}
 

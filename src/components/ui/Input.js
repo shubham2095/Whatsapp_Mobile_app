@@ -17,6 +17,7 @@ export const Input = forwardRef(function Input({ label, error, password = false,
         <TextInput
           ref={ref}
           placeholderTextColor={colors.muted}
+          maxFontSizeMultiplier={1.35}
           selectionColor={colors.primary}
           secureTextEntry={password && hidden}
           autoCapitalize={password ? 'none' : rest.autoCapitalize}

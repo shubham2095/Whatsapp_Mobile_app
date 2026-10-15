@@ -2,16 +2,47 @@ import { RefreshControl, ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { Badge, Banner, Button, Card, StatCard, Text } from '@/components/ui';
+import { Ionicons } from '@expo/vector-icons';
+import { Badge, Banner, Button, Card, PressableScale, StatCard, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { AdminDashboard } from '@/features/admin/AdminDashboard';
 import { useDashboardStats } from '@/features/analytics/hooks';
 import { UsageMeters } from '@/features/billing/UsageMeters';
 import { useNumbers } from '@/features/whatsapp/hooks';
+import { haptics } from '@/lib/haptics';
 import { can, hasFeature, isPlanExpired, roleLabel } from '@/lib/permissions';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const n = (v) => (v ?? 0).toLocaleString();
+
+function greeting() {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+}
+
+// A big, easy-to-hit shortcut: icon in a tinted circle with its name underneath.
+function QuickAction({ icon, label, onPress }) {
+  const { colors, radius, spacing, shadows } = useTheme();
+  return (
+    <PressableScale
+      onPress={() => {
+        haptics.select();
+        onPress();
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      style={[
+        { flex: 1, alignItems: 'center', gap: spacing.xs, paddingVertical: spacing.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border },
+        shadows.card,
+      ]}
+    >
+      <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.chipBg, alignItems: 'center', justifyContent: 'center' }}>
+        <Ionicons name={icon} size={22} color={colors.primary} />
+      </View>
+      <Text variant="caption" style={{ fontWeight: '600' }}>{label}</Text>
+    </PressableScale>
+  );
+}
 
 function WorkspaceDashboard() {
   const user = useUser();
@@ -44,15 +75,16 @@ function WorkspaceDashboard() {
     >
       {isPlanExpired(user) ? <Banner tone="warning" message="Your subscription has ended. Renew your plan to keep using WhatsApp features." /> : null}
       <View>
-        <Text variant="heading">Hi, {user.name.split(' ')[0]}</Text>
+        <Text variant="heading">{greeting()}, {user.name.split(' ')[0]}</Text>
         {company ? <Text muted>{company}</Text> : null}
       </View>
 
       {tenantUser ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {can(user, 'conversations.view') ? <Button title="Inbox" variant="secondary" style={{ flexGrow: 1, flexBasis: '30%' }} onPress={() => router.navigate('/inbox')} /> : null}
-          {can(user, 'campaigns.view') ? <Button title="Campaigns" variant="secondary" style={{ flexGrow: 1, flexBasis: '30%' }} onPress={() => router.navigate('/campaigns')} /> : null}
-          {can(user, 'contacts.view') ? <Button title="Contacts" variant="secondary" style={{ flexGrow: 1, flexBasis: '30%' }} onPress={() => router.navigate('/contacts')} /> : null}
+        <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+          {can(user, 'conversations.view') ? <QuickAction icon="chatbubbles" label="Inbox" onPress={() => router.navigate('/inbox')} /> : null}
+          {can(user, 'contacts.view') ? <QuickAction icon="people" label="Contacts" onPress={() => router.navigate('/contacts')} /> : null}
+          {can(user, 'campaigns.view') ? <QuickAction icon="megaphone" label="Campaigns" onPress={() => router.navigate('/campaigns')} /> : null}
+          {can(user, 'conversations.reply') ? <QuickAction icon="flash" label="Replies" onPress={() => router.push('/quick-replies')} /> : null}
         </View>
       ) : null}
 
