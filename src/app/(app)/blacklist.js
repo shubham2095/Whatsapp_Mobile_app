@@ -8,6 +8,7 @@ import { fieldError } from '@/lib/errors';
 import { formatListTime } from '@/lib/format';
 import { can } from '@/lib/permissions';
 import { displayPhone, isDialable, normalizePhone } from '@/lib/phone';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // Numbers here are skipped by every campaign and bulk send. Add/remove needs contacts.delete (as on the web).
@@ -71,7 +72,7 @@ export default function Blacklist() {
           placeholder="Search number or name"
           placeholderTextColor={colors.muted}
           autoCorrect={false}
-          style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+          style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
         />
       </View>
       {canEdit ? <Button title={adding ? 'Cancel' : 'Block a number'} variant={adding ? 'ghost' : 'outline'} onPress={() => setAdding((a) => !a)} /> : null}

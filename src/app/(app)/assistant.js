@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, KeyboardAvoidingView, Pressable, TextInput
 import { Ionicons } from '@expo/vector-icons';
 import { ask } from '@/api/assistant';
 import { Text } from '@/components/ui';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const SUGGESTIONS = [
@@ -95,7 +96,7 @@ export default function Assistant() {
           placeholderTextColor={colors.muted}
           multiline
           maxLength={1000}
-          style={{ flex: 1, maxHeight: 110, minHeight: 44, backgroundColor: colors.bg, color: colors.text, borderRadius: 22, paddingHorizontal: spacing.md, paddingVertical: 11, fontSize: fontSize.md }}
+          style={{ flex: 1, maxHeight: 110, minHeight: 44, backgroundColor: colors.bg, color: colors.text, fontFamily: fontRegular, borderRadius: 22, paddingHorizontal: spacing.md, paddingVertical: 11, fontSize: fontSize.md }}
         />
         <Pressable
           onPress={() => send(input)}

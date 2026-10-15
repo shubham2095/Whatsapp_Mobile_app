@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ActionSheet, Banner, Button, Text } from '@/components/ui';
 import { formatDuration, formatFileSize, formatRemaining } from '@/lib/format';
 import { useNow } from '@/lib/useNow';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useSendMedia, useSendTemplate } from './hooks';
 import { pickDocument, pickFromGallery, takePhoto } from './pickMedia';
@@ -228,6 +229,7 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
               paddingTop: 11,
               paddingBottom: 11,
               fontSize: fontSize.md,
+              fontFamily: fontRegular,
             }}
           />
           {canSend || busy ? (

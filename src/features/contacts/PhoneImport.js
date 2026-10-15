@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Banner, Button, EmptyState, Text } from '@/components/ui';
 import { DEFAULT_COUNTRY_CODE } from '@/config';
 import { displayPhone, isDialable, normalizePhone } from '@/lib/phone';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { CountryCodeField } from './CountryCodeField';
 import { ImportResult } from './ImportResult';
@@ -145,7 +146,7 @@ export function PhoneImport() {
           placeholder="Search your contacts"
           placeholderTextColor={colors.muted}
           autoCorrect={false}
-          style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+          style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
         />
       </View>
       <Pressable onPress={toggleAll} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.sm }}>

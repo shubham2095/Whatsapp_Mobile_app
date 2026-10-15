@@ -7,6 +7,7 @@ import { useUser } from '@/features/auth/AuthProvider';
 import { useSyncTemplates, useTemplates } from '@/features/templates/hooks';
 import { CATEGORY_LABEL, CATEGORY_TONE, STATUS_TONE } from '@/features/templates/meta';
 import { can, planAllows } from '@/lib/permissions';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const FILTERS = [
@@ -62,7 +63,7 @@ export default function Templates() {
             placeholderTextColor={colors.muted}
             autoCapitalize="none"
             autoCorrect={false}
-            style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+            style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
           />
         </View>
         <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>

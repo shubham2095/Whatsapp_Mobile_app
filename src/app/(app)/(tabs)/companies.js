@@ -6,6 +6,7 @@ import { Avatar, Badge, Banner, EmptyState, Text, ListSkeleton } from '@/compone
 import { useCompanies } from '@/features/admin/hooks';
 import { COMPANY_TONE } from '@/features/admin/meta';
 import { formatListTime } from '@/lib/format';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // Platform super admin: every company on Heltog.
@@ -33,7 +34,7 @@ export default function Companies() {
             placeholderTextColor={colors.muted}
             autoCapitalize="none"
             autoCorrect={false}
-            style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+            style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
           />
         </View>
         {data ? <Text variant="caption" muted style={{ marginTop: spacing.xs }}>{companies.length} of {data.companies.length} companies</Text> : null}

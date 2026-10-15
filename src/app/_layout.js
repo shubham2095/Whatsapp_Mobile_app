@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { focusManager, onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { UpdateBanner } from '@/components/UpdateBanner';
@@ -14,6 +15,7 @@ import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { OfflineScreen } from '@/features/auth/OfflineScreen';
 import { captureError, monitoringEnabled, withMonitoring } from '@/lib/monitoring';
 import { persistOptions, queryClient } from '@/lib/queryClient';
+import { fontFiles } from '@/theme/fonts';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 
 SplashScreen.preventAutoHideAsync();
@@ -66,6 +68,10 @@ export function ErrorBoundary({ error, retry }) {
 }
 
 function RootLayout() {
+  // The splash screen stays up until the fonts are ready (they are bundled, so this is quick). If loading
+  // ever fails the app still opens, just with the phone's own font.
+  const [fontsLoaded, fontError] = useFonts(fontFiles);
+
   // Tell React Query when the app is foregrounded: pauses polling in the background and
   // refetches on return.
   useEffect(() => {
@@ -82,6 +88,8 @@ function RootLayout() {
       return () => sub.remove();
     });
   }, []);
+
+  if (!fontsLoaded && !fontError) return null;
 
   return (
     <SafeAreaProvider>

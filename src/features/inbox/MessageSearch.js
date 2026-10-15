@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, TextInput, View } from 'react-n
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui';
 import { formatDayLabel, formatTime } from '@/lib/format';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const MAX_MESSAGES = 1000;
@@ -61,7 +62,7 @@ export function MessageSearch({ messages, hasNextPage, isFetchingNextPage, fetch
           placeholder="Search in this chat"
           placeholderTextColor={colors.muted}
           returnKeyType="search"
-          style={{ flex: 1, color: colors.text, fontSize: 16, paddingVertical: spacing.xs }}
+          style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: 16, paddingVertical: spacing.xs }}
         />
         {term ? (
           <Pressable onPress={() => setTerm('')} hitSlop={10} accessibilityRole="button" accessibilityLabel="Clear search">

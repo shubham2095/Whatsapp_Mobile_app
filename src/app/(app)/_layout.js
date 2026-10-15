@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { useUser } from '@/features/auth/AuthProvider';
 import { usePushNotifications } from '@/features/push/usePushNotifications';
 import { can, hasActivePlan } from '@/lib/permissions';
+import { headerTitleFont } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 // Registers for push and routes notification taps. Renders nothing.
@@ -28,7 +29,7 @@ export default function AppLayout() {
         screenOptions={{
           headerStyle: { backgroundColor: colors.primaryDark },
           headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: '700' },
+          headerTitleStyle: headerTitleFont,
           contentStyle: { backgroundColor: colors.bg },
         }}
       >

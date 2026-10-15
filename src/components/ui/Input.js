@@ -1,6 +1,7 @@
 import { forwardRef, useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Text } from './Text';
 
@@ -29,6 +30,7 @@ export const Input = forwardRef(function Input({ label, error, password = false,
               paddingRight: password ? 48 : spacing.md,
               paddingVertical: spacing.md,
               fontSize: fontSize.md,
+              fontFamily: fontRegular,
               minHeight: 48,
             },
             style,

@@ -7,6 +7,7 @@ import { useUser } from '@/features/auth/AuthProvider';
 import { PRIORITY_TONE, STATUSES, STATUS_TONE, statusLabel } from '@/features/support/meta';
 import { useTickets } from '@/features/support/hooks';
 import { formatListTime } from '@/lib/format';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const FILTERS = [{ value: '', label: 'All' }, ...STATUSES];
@@ -39,7 +40,7 @@ export default function Support() {
             placeholderTextColor={colors.muted}
             autoCapitalize="none"
             autoCorrect={false}
-            style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+            style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
           />
         </View>
         <ChipSelect options={FILTERS} value={status} onChange={setStatus} />

@@ -7,6 +7,7 @@ import { ActionSheet, Banner, Button, EmptyState, Input, ListSkeleton, Sheet, Te
 import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { can } from '@/lib/permissions';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { bulkActions } from './bulkActions';
 import { ContactRow } from './ContactRow';
@@ -187,7 +188,7 @@ export function ContactsList({ fixedFilter }) {
               placeholderTextColor={colors.muted}
               returnKeyType="search"
               autoCorrect={false}
-              style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+              style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
             />
             {input ? (
               <Pressable onPress={() => setInput('')} hitSlop={8} accessibilityLabel="Clear search">

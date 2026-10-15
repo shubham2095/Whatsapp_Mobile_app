@@ -8,6 +8,7 @@ import { useUser } from '@/features/auth/AuthProvider';
 import { ConversationRow, contactLabel } from '@/features/inbox/ConversationRow';
 import { useConversations } from '@/features/inbox/hooks';
 import { usePinnedChats } from '@/features/inbox/usePinnedChats';
+import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 const FILTERS = [
@@ -82,7 +83,7 @@ export default function InboxTab() {
             placeholderTextColor={colors.muted}
             returnKeyType="search"
             autoCorrect={false}
-            style={{ flex: 1, color: colors.text, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
+            style={{ flex: 1, color: colors.text, fontFamily: fontRegular, fontSize: fontSize.md, paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm }}
           />
           {input ? (
             <Pressable onPress={() => setInput('')} hitSlop={8} accessibilityLabel="Clear search">

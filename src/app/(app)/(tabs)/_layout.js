@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@/features/auth/AuthProvider';
 import { can } from '@/lib/permissions';
+import { headerTitleFont, tabLabelFont } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
 function icon(name) {
@@ -22,7 +23,8 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: colors.primaryDark },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
+        headerTitleStyle: headerTitleFont,
+        tabBarLabelStyle: tabLabelFont,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
