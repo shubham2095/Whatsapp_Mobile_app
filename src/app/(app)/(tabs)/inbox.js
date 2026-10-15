@@ -2,12 +2,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Banner, EmptyState, Text, ListSkeleton } from '@/components/ui';
+import { ActionSheet, Banner, EmptyState, FadeInItem, Text, ListSkeleton } from '@/components/ui';
 import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { ConversationRow, contactLabel } from '@/features/inbox/ConversationRow';
-import { useConversations } from '@/features/inbox/hooks';
+import { useConversations, useMarkRead } from '@/features/inbox/hooks';
+import { SwipeableConversation } from '@/features/inbox/SwipeableConversation';
 import { usePinnedChats } from '@/features/inbox/usePinnedChats';
+import { haptics } from '@/lib/haptics';
 import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
@@ -58,12 +60,37 @@ export default function InboxTab() {
     });
   }, []);
 
+  const markRead = useMarkRead();
+  const pinToggle = useCallback(
+    (c) => {
+      togglePin(c.id);
+      toast.show(pinned.has(c.id) ? 'Chat unpinned' : 'Chat pinned');
+    },
+    [togglePin, pinned, toast],
+  );
+
   const renderItem = useCallback(
-    ({ item }) => <ConversationRow conversation={item} onPress={openChat} onLongPress={(c) => {
-        togglePin(c.id);
-        toast.show(pinned.has(c.id) ? 'Chat unpinned' : 'Chat pinned');
-      }} pinned={pinned.has(item.id)} />,
-    [openChat, togglePin, pinned, toast],
+    ({ item, index }) => (
+      <FadeInItem index={index}>
+        <SwipeableConversation
+          pinned={pinned.has(item.id)}
+          unread={item.unread_count > 0}
+          onTogglePin={() => pinToggle(item)}
+          onMarkRead={() => markRead.mutate(item.id)}
+        >
+          <ConversationRow
+            conversation={item}
+            onPress={openChat}
+            onLongPress={(c) => {
+              haptics.press();
+              pinToggle(c);
+            }}
+            pinned={pinned.has(item.id)}
+          />
+        </SwipeableConversation>
+      </FadeInItem>
+    ),
+    [openChat, pinToggle, pinned, markRead],
   );
 
   const agentActions = [

@@ -13,5 +13,8 @@ export { ChipSelect } from './ChipSelect';
 export { CheckList } from './CheckList';
 export { ProgressBar } from './ProgressBar';
 export { StatCard } from './StatCard';
+export { CountUp } from './CountUp';
 export { Fab } from './Fab';
+export { FadeInItem } from './FadeInItem';
+export { PressableScale } from './PressableScale';
 export { Skeleton, ListSkeleton, ChatSkeleton } from './Skeleton';

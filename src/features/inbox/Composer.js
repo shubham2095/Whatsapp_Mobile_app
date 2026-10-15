@@ -3,7 +3,8 @@ import { Pressable, TextInput, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ActionSheet, Banner, Button, Text } from '@/components/ui';
+import { ActionSheet, Banner, Button, PressableScale, Text } from '@/components/ui';
+import { haptics } from '@/lib/haptics';
 import { formatDuration, formatFileSize, formatRemaining } from '@/lib/format';
 import { useNow } from '@/lib/useNow';
 import { fontRegular } from '@/theme/fonts';
@@ -62,6 +63,7 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
 
   function send() {
     if (!canSend) return;
+    haptics.tap();
     setError(null);
     setNotice(null);
     if (pending) {
@@ -233,15 +235,16 @@ export function Composer({ conversationId, windowOpen, onSendText, windowEndsAt 
             }}
           />
           {canSend || busy ? (
-            <Pressable
+            <PressableScale
               onPress={send}
               disabled={!canSend}
+              scaleTo={0.88}
               accessibilityRole="button"
               accessibilityLabel="Send"
               style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', opacity: canSend ? 1 : 0.6 }}
             >
               <Ionicons name={busy ? 'hourglass-outline' : 'send'} size={20} color="#fff" />
-            </Pressable>
+            </PressableScale>
           ) : (
             <Pressable
               onPress={startRecording}

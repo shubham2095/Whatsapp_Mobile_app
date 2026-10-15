@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { focusManager, onlineManager } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { useFonts } from 'expo-font';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { OfflineIndicator } from '@/components/OfflineIndicator';
 import { UpdateBanner } from '@/components/UpdateBanner';
@@ -92,6 +93,7 @@ function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaProvider>
       <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
         <ThemeProvider>
@@ -103,6 +105,7 @@ function RootLayout() {
         </ThemeProvider>
       </PersistQueryClientProvider>
     </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
 

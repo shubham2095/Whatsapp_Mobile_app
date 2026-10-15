@@ -1,6 +1,7 @@
-import { ActivityIndicator, Pressable, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/theme/ThemeProvider';
+import { PressableScale } from './PressableScale';
 import { Text } from './Text';
 
 const SIZES = { sm: { height: 40, px: 14, text: 'small' }, md: { height: 48, px: 20, text: 'body' }, lg: { height: 54, px: 24, text: 'body' } };
@@ -15,13 +16,13 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
   const off = disabled || loading;
   const rippleColor = fg === '#fff' ? 'rgba(255,255,255,0.25)' : colors.primary + '22';
   return (
-    <Pressable
+    <PressableScale
       onPress={onPress}
       disabled={off}
       accessibilityRole="button"
       accessibilityState={{ disabled: off, busy: loading }}
       android_ripple={{ color: rippleColor }}
-      style={({ pressed }) => [
+      style={[
         {
           backgroundColor: bg,
           borderColor: variant === 'outline' ? colors.primary : 'transparent',
@@ -33,8 +34,7 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
           minHeight: s.height,
           paddingVertical: 8,
           overflow: 'hidden',
-          opacity: off ? 0.5 : pressed ? 0.9 : 1,
-          transform: [{ scale: pressed && !off ? 0.98 : 1 }],
+          opacity: off ? 0.5 : 1,
         },
         style,
       ]}
@@ -47,6 +47,6 @@ export function Button({ title, onPress, variant = 'primary', size = 'md', icon,
           <Text variant={s.text} style={{ color: fg, fontWeight: '600' }}>{title}</Text>
         </View>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }

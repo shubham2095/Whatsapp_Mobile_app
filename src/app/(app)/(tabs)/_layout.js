@@ -1,13 +1,29 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { useUser } from '@/features/auth/AuthProvider';
 import { can } from '@/lib/permissions';
 import { headerTitleFont, tabLabelFont } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 
+// Tab icon: filled and slightly lifted while its tab is active, with a small spring when it changes.
+function AnimatedTabIcon({ name, color, size, focused }) {
+  const lift = useSharedValue(focused ? 1 : 0);
+  useEffect(() => {
+    lift.set(withSpring(focused ? 1 : 0, { damping: 12, stiffness: 240 }));
+  }, [focused, lift]);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: 1 + 0.16 * lift.get() }, { translateY: -2 * lift.get() }] }));
+  return (
+    <Animated.View style={style}>
+      <Ionicons name={focused ? name.replace('-outline', '') : name} size={size} color={color} />
+    </Animated.View>
+  );
+}
+
 function icon(name) {
-  function TabIcon({ color, size }) {
-    return <Ionicons name={name} size={size} color={color} />;
+  function TabIcon({ color, size, focused }) {
+    return <AnimatedTabIcon name={name} color={color} size={size} focused={focused} />;
   }
   return TabIcon;
 }

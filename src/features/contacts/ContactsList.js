@@ -3,7 +3,8 @@ import { ActivityIndicator, Alert, FlatList, Pressable, RefreshControl, TextInpu
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
-import { ActionSheet, Banner, Button, EmptyState, Fab, Input, ListSkeleton, Sheet, Text } from '@/components/ui';
+import { ActionSheet, Banner, Button, EmptyState, Fab, FadeInItem, Input, ListSkeleton, Sheet, Text } from '@/components/ui';
+import { haptics } from '@/lib/haptics';
 import { useToast } from '@/components/Toast';
 import { useUser } from '@/features/auth/AuthProvider';
 import { can } from '@/lib/permissions';
@@ -69,15 +70,20 @@ export function ContactsList({ fixedFilter }) {
     [selecting, toggle],
   );
   const renderItem = useCallback(
-    ({ item }) => (
-      <ContactRow
-        contact={item}
-        onPress={open}
-        onLongPress={(c) => toggle(c.id)}
-        showHot={activeFilter === 'hot'}
-        selectionMode={selecting}
-        selected={selected.has(item.id)}
-      />
+    ({ item, index }) => (
+      <FadeInItem index={index}>
+        <ContactRow
+          contact={item}
+          onPress={open}
+          onLongPress={(c) => {
+            haptics.press();
+            toggle(c.id);
+          }}
+          showHot={activeFilter === 'hot'}
+          selectionMode={selecting}
+          selected={selected.has(item.id)}
+        />
+      </FadeInItem>
     ),
     [open, toggle, activeFilter, selecting, selected],
   );

@@ -12,6 +12,7 @@ import { ImageViewer } from '@/features/inbox/ImageViewer';
 import { TransferSheet } from '@/features/inbox/TransferSheet';
 import { MessageBubble } from '@/features/inbox/MessageBubble';
 import { MessageInfoSheet } from '@/features/inbox/MessageInfoSheet';
+import { JumpToLatest } from '@/features/inbox/JumpToLatest';
 import { MessageSearch } from '@/features/inbox/MessageSearch';
 import { useOutbox } from '@/features/inbox/useOutbox';
 import { useDeleteMessage, useMarkRead, useMessages } from '@/features/inbox/hooks';
@@ -71,6 +72,7 @@ export default function Chat() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [infoFor, setInfoFor] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [scrolledUp, setScrolledUp] = useState(false);
   const listRef = useRef(null);
 
   // Suppress banners for this chat while it is on screen and clear any already in the shade.
@@ -186,8 +188,11 @@ export default function Chat() {
       ) : isLoading ? (
         <ChatSkeleton />
       ) : (
+        <View style={{ flex: 1 }}>
         <FlatList
           ref={listRef}
+          onScroll={(e) => setScrolledUp(e.nativeEvent.contentOffset.y > 500)}
+          scrollEventThrottle={100}
           inverted
           data={listData}
           onScrollToIndexFailed={({ index, averageItemLength }) => {
@@ -207,6 +212,8 @@ export default function Chat() {
             </View>
           }
         />
+        {scrolledUp ? <JumpToLatest onPress={() => listRef.current?.scrollToOffset({ offset: 0, animated: true })} /> : null}
+        </View>
       )}
 
       {canReply ? (
