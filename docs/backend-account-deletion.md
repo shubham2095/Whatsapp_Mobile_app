@@ -17,11 +17,12 @@ so test it on a copy first.
 git apply /path/to/heltog-mobile/docs/patches/backend-delete-account.patch
 
 # in your Next.js frontend repo (the folder that contains app/ and package.json)
-git apply /path/to/heltog-mobile/docs/patches/frontend-delete-account.patch
+git apply --whitespace=nowarn /path/to/heltog-mobile/docs/patches/frontend-delete-account.patch
 ```
 
 - `backend-delete-account.patch`: the `deleteAccount` method in `AuthController` and its route.
-- `frontend-delete-account.patch`: the new `/delete-account` page, the mobile-app items in the Privacy Policy,
+- `frontend-delete-account.patch` (the website files use Windows line endings, so the patch does too; the
+  `--whitespace=nowarn` flag only silences a harmless warning about that): the new `/delete-account` page, the mobile-app items in the Privacy Policy,
   and "Pizi" renamed to "Heltog SocialFlow" in the Privacy Policy and Terms.
 
 After applying: deploy the backend (`php artisan route:clear` if routes are cached), rebuild and upload the website,
