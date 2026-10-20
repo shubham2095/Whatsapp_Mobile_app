@@ -33,10 +33,10 @@ Built with **Expo SDK 57**, **React Native 0.86**, **Expo Router** and plain **J
 - Companies (create, suspend, delete, assign plan, view users, reset passwords), plans (create, edit, activate),
   invoice and tax settings, support tickets with replies, platform dashboard.
 
-Sign-in with email and password, or with a 6-digit code sent to the mobile number saved on the account (needs an OTP
+Sign-in with email and password, **Continue with Google** (needs the backend files in [`docs/backend-google-signin.md`](docs/backend-google-signin.md); installed builds only, not Expo Go), or with a 6-digit code sent to the mobile number saved on the account (needs an OTP
 channel configured on the server: `OTP_WHATSAPP_TEMPLATE` or `MSG91_AUTH_KEY`).
 
-**Not in the app** (web only): the automation flow builder, one-click WhatsApp Embedded Signup, Google sign-in.
+**Not in the app** (web only): the automation flow builder and one-click WhatsApp Embedded Signup.
 
 ## Requirements
 

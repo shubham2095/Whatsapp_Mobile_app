@@ -36,3 +36,8 @@ export const requestOtp = (phone) => request('/auth/otp/request', { method: 'POS
 
 // code: the 6 digits. Same answer as login: { user, token, ... }. A wrong or expired code is a 422, never a 401.
 export const verifyOtp = (phone, code) => request('/auth/otp/verify', { method: 'POST', body: { phone, code }, token: null });
+
+// Last step of "Continue with Google" in the app: the one-time code from the redirect plus the secret the app kept.
+// Same answer as login: { user, token, ... }. Needs the GoogleAuthController backend file (docs/backend-google-signin.md).
+export const exchangeGoogleCode = (code, verifier) =>
+  request('/auth/google/exchange', { method: 'POST', body: { code, verifier }, token: null });

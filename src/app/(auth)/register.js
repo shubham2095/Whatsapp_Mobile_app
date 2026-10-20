@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'expo-router';
 import { Banner, Button, Input, Text } from '@/components/ui';
 import { AuthShell } from '@/features/auth/AuthShell';
+import { GoogleButton } from '@/features/auth/GoogleButton';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { fieldError, isValidEmail } from '@/lib/errors';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -13,6 +14,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [local, setLocal] = useState({});
+  const [googleError, setGoogleError] = useState(null);
 
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }));
   const err = (key) => local[key] ?? fieldError(error, key);
@@ -62,7 +64,7 @@ export default function Register() {
         </Text>
       }
     >
-      <Banner message={bannerMessage} />
+      <Banner message={googleError ?? bannerMessage} />
       <Input label="Company name" value={form.company_name} onChangeText={set('company_name')} autoCapitalize="words" error={err('company_name')} />
       <Input label="Your name" value={form.name} onChangeText={set('name')} autoCapitalize="words" autoComplete="name" error={err('name')} />
       <Input label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" autoCapitalize="none" autoComplete="email" error={err('email')} />
@@ -70,6 +72,7 @@ export default function Register() {
       <Input label="Password" password value={form.password} onChangeText={set('password')} autoComplete="new-password" error={err('password')} />
       <Input label="Confirm password" password value={form.password_confirmation} onChangeText={set('password_confirmation')} autoComplete="new-password" error={err('password_confirmation')} />
       <Button title="Create account" loading={loading} onPress={submit} />
+      <GoogleButton onError={setGoogleError} style={{ marginTop: 8 }} />
     </AuthShell>
   );
 }

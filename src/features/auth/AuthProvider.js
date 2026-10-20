@@ -124,6 +124,8 @@ export function AuthProvider({ children }) {
         return bootstrap();
       },
       login: async (email, password) => startSession(await authApi.login(email.trim(), password)),
+      // payload: the login answer from signInWithGoogle() (the browser step lives in the screen, so it can show errors).
+      loginWithPayload: (payload) => startSession(payload),
       loginWithOtp: async (phone, code) => startSession(await authApi.verifyOtp(phone, code)),
       register: async (body) => startSession(await authApi.register(body)),
       logout: async () => {

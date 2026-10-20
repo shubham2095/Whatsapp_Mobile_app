@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, router } from 'expo-router';
 import { Banner, Button, Input, Text } from '@/components/ui';
 import { AuthShell } from '@/features/auth/AuthShell';
+import { GoogleButton } from '@/features/auth/GoogleButton';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { fieldError, isValidEmail } from '@/lib/errors';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -15,6 +16,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [local, setLocal] = useState({});
+  const [googleError, setGoogleError] = useState(null);
 
   async function submit() {
     const problems = {};
@@ -45,7 +47,7 @@ export default function Login() {
         </Text>
       }
     >
-      <Banner message={error && !error.errors?.email ? error.message : null} />
+      <Banner message={googleError ?? (error && !error.errors?.email ? error.message : null)} />
       <Input
         label="Email"
         value={email}
@@ -74,6 +76,7 @@ export default function Login() {
         Forgot password?
       </Link>
       <Button title="Sign in" loading={loading} onPress={submit} />
+      <GoogleButton onError={setGoogleError} style={{ marginTop: 8 }} />
       <Button title="Sign in with mobile code" variant="ghost" icon="phone-portrait-outline" onPress={() => router.push('/login-otp')} style={{ marginTop: 8 }} />
     </AuthShell>
   );
