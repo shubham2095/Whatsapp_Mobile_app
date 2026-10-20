@@ -33,6 +33,9 @@ Built with **Expo SDK 57**, **React Native 0.86**, **Expo Router** and plain **J
 - Companies (create, suspend, delete, assign plan, view users, reset passwords), plans (create, edit, activate),
   invoice and tax settings, support tickets with replies, platform dashboard.
 
+Sign-in with email and password, or with a 6-digit code sent to the mobile number saved on the account (needs an OTP
+channel configured on the server: `OTP_WHATSAPP_TEMPLATE` or `MSG91_AUTH_KEY`).
+
 **Not in the app** (web only): the automation flow builder, one-click WhatsApp Embedded Signup, Google sign-in.
 
 ## Requirements
@@ -177,12 +180,18 @@ The backend already sends Expo push messages for new inbound WhatsApp messages a
 
 ## Known limitations
 
-- Campaigns send a template as-is: templates with variables or a media header should be sent with **Bulk send**.
-  Paused campaigns cannot be resumed (the backend only starts draft or scheduled ones).
+- Campaigns need the backend files in [`docs/backend-campaign-tags-variables.md`](docs/backend-campaign-tags-variables.md) to fill
+  template variables, attach a media header or target a tag. Without them the server sends the template as-is and the app
+  tells you to use **Bulk send** for those templates. Paused campaigns cannot be resumed (the backend only starts draft or
+  scheduled ones).
 - Automations can be switched on and off and inspected, but not created or edited.
-- Tags are plain text on contacts (`tag_list`); there is no tag-based audience for campaigns.
+- Tags are plain text on contacts (`tag_list`). A tag audience for campaigns and the tag filter in Contacts use the same
+  backend files as above.
 - Voice notes are recorded as AMR on Android, which the backend accepts. If WhatsApp ever rejects the format,
   change the recorder options in `src/features/inbox/useVoiceRecorder.js`.
+- Plans are bought through `POST /billing/order` (free plans activate at once, paid ones go through Razorpay). The app never
+  calls `POST /billing/subscribe`: on the current server it assigns any active plan, **paid ones included, without payment**.
+  Worth closing on the server (only allow it for plans with a total of 0, or for super admins).
 - iOS has not been built or tested yet.
 
 ## Contributing

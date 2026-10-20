@@ -5,12 +5,13 @@ import * as contactsApi from '@/api/contacts';
 const nextPage = (last) => (last.meta.current_page < last.meta.last_page ? last.meta.current_page + 1 : undefined);
 
 // filter: 'all' | 'hot' | 'blocked' | 'opted_out'
-export function useContacts({ search, filter }) {
+export function useContacts({ search, filter, tag }) {
   return useInfiniteQuery({
-    queryKey: ['contacts', { search: search ?? '', filter }],
+    queryKey: ['contacts', { search: search ?? '', filter, tag: tag ?? '' }],
     queryFn: ({ pageParam }) =>
       contactsApi.listContacts({
         search,
+        tagName: tag,
         hot: filter === 'hot',
         blocked: filter === 'blocked',
         optedOut: filter === 'opted_out',
@@ -19,6 +20,17 @@ export function useContacts({ search, filter }) {
     initialPageParam: 1,
     getNextPageParam: nextPage,
     placeholderData: keepPreviousData,
+  });
+}
+
+// Tags in use. Fails with a 404 on servers without the campaign-tags patch: then `isSuccess` is false and the app hides
+// everything that needs tags.
+export function useTagNames() {
+  return useQuery({
+    queryKey: ['contacts', 'tag-names'],
+    queryFn: async () => (await contactsApi.listTagNames()).tags,
+    retry: false,
+    staleTime: 60_000,
   });
 }
 

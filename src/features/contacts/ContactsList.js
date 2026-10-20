@@ -12,7 +12,7 @@ import { fontRegular } from '@/theme/fonts';
 import { useTheme } from '@/theme/ThemeProvider';
 import { bulkActions } from './bulkActions';
 import { ContactRow } from './ContactRow';
-import { useContacts } from './hooks';
+import { useContacts, useTagNames } from './hooks';
 
 const FILTERS = [
   { key: 'all', label: 'All' },
@@ -37,6 +37,9 @@ export function ContactsList({ fixedFilter }) {
   const [tagOpen, setTagOpen] = useState(false);
   const [tagText, setTagText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [tag, setTag] = useState(''); // '' = every tag
+  const [tagMenu, setTagMenu] = useState(false);
+  const tagNames = useTagNames(); // only works on servers with the campaign-tags patch
   const activeFilter = fixedFilter ?? filter;
 
   useEffect(() => {
@@ -47,6 +50,7 @@ export function ContactsList({ fixedFilter }) {
   const { data, isLoading, isError, error, refetch, isRefetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useContacts({
     search,
     filter: activeFilter,
+    tag: tag || undefined,
   });
   const contacts = useMemo(() => data?.pages.flatMap((p) => p.contacts) ?? [], [data]);
   const total = data?.pages[0]?.meta.total;
@@ -218,6 +222,18 @@ export function ContactsList({ fixedFilter }) {
                   </Pressable>
                 );
               })}
+              {tagNames.isSuccess && tagNames.data.length > 0 ? (
+                <Pressable
+                  onPress={() => setTagMenu(true)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Filter by tag"
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 6, borderRadius: radius.pill, backgroundColor: tag ? colors.accent : colors.chipBg }}
+                >
+                  <Ionicons name="pricetag" size={13} color={tag ? '#fff' : colors.primary} />
+                  <Text variant="small" numberOfLines={1} style={{ color: tag ? '#fff' : colors.primary, fontWeight: '600', maxWidth: 110 }}>{tag || 'Tag'}</Text>
+                  <Ionicons name="chevron-down" size={13} color={tag ? '#fff' : colors.primary} />
+                </Pressable>
+              ) : null}
             </View>
           )}
           {total !== undefined ? <Text variant="caption" muted>{total} {total === 1 ? 'contact' : 'contacts'}. Long-press one to select several.</Text> : null}
@@ -258,6 +274,15 @@ export function ContactsList({ fixedFilter }) {
       {menu.length > 0 && !selecting ? (
         <Fab onPress={() => setMenuOpen(true)} label="Add or import contacts" />
       ) : null}
+      <ActionSheet
+        visible={tagMenu}
+        title="Show contacts with tag"
+        actions={[
+          { label: 'All tags', icon: tag === '' ? 'checkmark' : undefined, onPress: () => setTag('') },
+          ...(tagNames.data ?? []).slice(0, 12).map((t) => ({ label: `${t.name} (${t.contacts_count})`, icon: tag === t.name ? 'checkmark' : 'pricetag-outline', onPress: () => setTag(t.name) })),
+        ]}
+        onClose={() => setTagMenu(false)}
+      />
       <ActionSheet visible={menuOpen} title="Contacts" actions={menu} onClose={() => setMenuOpen(false)} />
       <ActionSheet visible={actionsOpen} title={`${picked.length} selected`} actions={actions} onClose={() => setActionsOpen(false)} />
 

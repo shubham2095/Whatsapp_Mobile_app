@@ -124,6 +124,7 @@ export function AuthProvider({ children }) {
         return bootstrap();
       },
       login: async (email, password) => startSession(await authApi.login(email.trim(), password)),
+      loginWithOtp: async (phone, code) => startSession(await authApi.verifyOtp(phone, code)),
       register: async (body) => startSession(await authApi.register(body)),
       logout: async () => {
         // Stop pushes to this phone while the session token is still valid.

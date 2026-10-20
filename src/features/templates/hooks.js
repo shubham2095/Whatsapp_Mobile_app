@@ -23,5 +23,6 @@ function useTemplateMutation(fn) {
 }
 
 export const useCreateTemplate = () => useTemplateMutation(api.createTemplate);
+export const useUploadTemplateSample = () => useMutation({ mutationFn: api.uploadTemplateSample });
 export const useDeleteTemplate = () => useTemplateMutation(api.deleteTemplate);
 export const useSyncTemplates = () => useTemplateMutation(api.syncTemplates);

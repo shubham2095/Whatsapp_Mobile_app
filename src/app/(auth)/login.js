@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { Banner, Button, Input, Text } from '@/components/ui';
 import { AuthShell } from '@/features/auth/AuthShell';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -74,6 +74,7 @@ export default function Login() {
         Forgot password?
       </Link>
       <Button title="Sign in" loading={loading} onPress={submit} />
+      <Button title="Sign in with mobile code" variant="ghost" icon="phone-portrait-outline" onPress={() => router.push('/login-otp')} style={{ marginTop: 8 }} />
     </AuthShell>
   );
 }

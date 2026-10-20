@@ -59,7 +59,7 @@ export default function More() {
     <Screen scroll>
       <View style={{ gap: spacing.md }}>
         <Card style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md }}>
-          <Avatar name={user.name} size={52} />
+          <Avatar name={user.name} size={52} uri={user.avatar_url} />
           <View style={{ flex: 1 }}>
             <Text variant="subheading">{user.name}</Text>
             <Text variant="small" muted>{user.email}</Text>

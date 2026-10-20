@@ -14,3 +14,11 @@ export const deleteTemplate = (id) => request(`/templates/${id}`, { method: 'DEL
 
 // Pulls the latest approved/rejected templates from Meta. -> { message, synced }
 export const syncTemplates = () => request('/templates/sync', { method: 'POST' });
+
+// Uploads the sample image / video / PDF that Meta reviews for a media-header template (jpg, png, mp4 or pdf, max 5 MB).
+// file: { uri, name, mimeType } -> { header_handle }, which goes into createTemplate as `header_handle`.
+export function uploadTemplateSample(file) {
+  const form = new FormData();
+  form.append('file', { uri: file.uri, name: file.name, type: file.mimeType });
+  return request('/templates/upload-sample', { method: 'POST', body: form, multipart: true });
+}

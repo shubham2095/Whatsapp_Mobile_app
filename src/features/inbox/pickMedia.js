@@ -55,7 +55,8 @@ const HEADER_RULES = {
   DOCUMENT: { mimes: ['application/pdf'], hint: 'PDF' },
 };
 
-export async function pickHeaderFile(format) {
+// `maxBytes` lowers the size limit for callers that need less than the usual 16 MB (template samples: 5 MB).
+export async function pickHeaderFile(format, { maxBytes } = {}) {
   const rule = HEADER_RULES[format];
   const picked =
     format === 'DOCUMENT'
@@ -66,5 +67,30 @@ export async function pickHeaderFile(format) {
         );
   if (!picked || picked.error) return picked;
   if (!rule.mimes.includes(picked.file.mimeType)) return { error: `This header must be a ${rule.hint} file.` };
+  if (maxBytes && picked.file.size && picked.file.size > maxBytes) {
+    return { error: `That file is larger than ${Math.round(maxBytes / (1024 * 1024))} MB.` };
+  }
   return picked;
+}
+
+// A square profile photo as a data URL, which is what the server stores (it allows about 2 MB). The photo is cropped to
+// a square and compressed hard, so it is normally far below that. source: 'gallery' | 'camera'.
+const MAX_AVATAR_CHARS = 2_900_000;
+
+export async function pickAvatar(source = 'gallery') {
+  const options = { mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.3, base64: true };
+  let result;
+  if (source === 'camera') {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) return { error: 'Allow camera access in Settings to take a photo.' };
+    result = await ImagePicker.launchCameraAsync(options);
+  } else {
+    result = await ImagePicker.launchImageLibraryAsync(options);
+  }
+  if (result.canceled || !result.assets?.length) return null;
+  const a = result.assets[0];
+  if (!a.base64) return { error: 'Could not read that photo. Try another one.' };
+  const dataUrl = `data:${a.mimeType || 'image/jpeg'};base64,${a.base64}`;
+  if (dataUrl.length > MAX_AVATAR_CHARS) return { error: 'That photo is too large. Pick a smaller one.' };
+  return { dataUrl };
 }
