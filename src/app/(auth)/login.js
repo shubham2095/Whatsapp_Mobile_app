@@ -41,7 +41,7 @@ export default function Login() {
     <AuthShell
       hero
       title="Welcome back"
-      subtitle="Sign in to your Heltog workspace."
+      subtitle="Sign in to your workspace."
       footer={
         <Text muted>
           New to Heltog?{' '}
@@ -51,7 +51,7 @@ export default function Login() {
     >
       <Banner message={googleError ?? (error && !error.errors?.email ? error.message : null)} />
       <Input
-        label="Email"
+        accessibilityLabel="Email"
         icon="mail-outline"
         value={email}
         onChangeText={setEmail}
@@ -59,31 +59,31 @@ export default function Login() {
         autoCapitalize="none"
         autoComplete="email"
         textContentType="emailAddress"
-        placeholder="you@company.com"
+        placeholder="Email address"
         returnKeyType="next"
         onSubmitEditing={() => passwordRef.current?.focus()}
         error={local.email ?? fieldError(error, 'email')}
       />
       <Input
         ref={passwordRef}
-        label="Password"
+        accessibilityLabel="Password"
         icon="lock-closed-outline"
         password
         value={password}
         onChangeText={setPassword}
         autoComplete="current-password"
         textContentType="password"
-        placeholder="Your password"
+        placeholder="Password"
         returnKeyType="go"
         onSubmitEditing={submit}
         error={local.password ?? fieldError(error, 'password')}
       />
-      <Link href="/forgot-password" style={{ color: colors.primary, fontWeight: '600', alignSelf: 'flex-end', marginTop: -6, marginBottom: spacing.lg }}>
+      <Link href="/forgot-password" style={{ color: colors.primary, fontWeight: '600', alignSelf: 'flex-end', marginTop: -8, marginBottom: spacing.lg }}>
         Forgot password?
       </Link>
-      <Button title="Sign in" size="lg" loading={loading} onPress={submit} />
+      <Button title="Sign in" icon="arrow-forward" loading={loading} onPress={submit} />
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginVertical: spacing.xl }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginVertical: spacing.lg }}>
         <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
         <Text variant="caption" muted>or continue with</Text>
         <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />

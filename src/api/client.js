@@ -1,4 +1,6 @@
+import { onlineManager } from '@tanstack/react-query';
 import { API_URL } from '@/config';
+import { reportServerFailure, reportServerOk } from '@/lib/polling';
 import { getToken } from '@/lib/storage';
 
 // Thrown for every failed call. `status` is the HTTP status (0 = network error),
@@ -75,11 +77,20 @@ export async function request(path, { method = 'GET', body, params, multipart = 
     res = await fetch(API_URL + path + toQuery(params), { method, headers, body: payload, signal: controller.signal });
     json = await res.json().catch(() => ({}));
   } catch {
-    if (controller.signal.aborted) throw new ApiError('The server is taking too long to answer. Please try again.', { code: 'timeout' });
+    if (controller.signal.aborted) {
+      reportServerFailure();
+      throw new ApiError('The server is taking too long to answer. Please try again.', { code: 'timeout' });
+    }
+    // No internet is not the server's fault: the offline pill covers it, and polling already pauses.
+    if (onlineManager.isOnline()) reportServerFailure();
     throw new ApiError('Network error. Check your connection and try again.');
   } finally {
     clearTimeout(timer);
   }
+
+  if (res.status === 429) reportServerFailure({ tooMany: true });
+  else if (res.status >= 500) reportServerFailure();
+  else reportServerOk();
 
   if (res.status === 401 && authToken && onUnauthorized) onUnauthorized();
 

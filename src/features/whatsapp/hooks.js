@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as wa from '@/api/whatsapp';
 
 export function useNumbers(enabled = true) {
-  return useQuery({ queryKey: ['wa-numbers'], queryFn: wa.listNumbers, enabled });
+  return useQuery({ queryKey: ['wa-numbers'], queryFn: wa.listNumbers, enabled, staleTime: 5 * 60_000 });
 }
 
 // Runs a number action, then refreshes the list (and anything chat-related that depends on the number).

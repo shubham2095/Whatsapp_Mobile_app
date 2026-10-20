@@ -1,8 +1,9 @@
 import { request } from './client';
 
 // GET /whatsapp/conversations -> { conversations, meta: { current_page, last_page, total } }
-export const listConversations = ({ status, search, page = 1, perPage = 25 } = {}) =>
-  request('/whatsapp/conversations', { params: { status, search, page, per_page: perPage } });
+// sort: 'recent' asks for newest message first. Servers without that option ignore it and list hot contacts first.
+export const listConversations = ({ status, search, sort, page = 1, perPage = 25 } = {}) =>
+  request('/whatsapp/conversations', { params: { status, search, sort, page, per_page: perPage } });
 
 // Newest first. `cursor` is the opaque `next_cursor` from the previous page.
 // -> { messages, next_cursor, has_more }

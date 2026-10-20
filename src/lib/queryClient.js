@@ -25,7 +25,7 @@ export const persistOptions = {
   persister,
   maxAge: DAY_MS,
   // Bump this when the shape of cached data changes, so old caches are discarded.
-  buster: 'v1',
+  buster: 'v3',
   dehydrateOptions: {
     shouldDehydrateQuery: (query) => query.state.status === 'success' && PERSISTED.has(query.queryKey[0]),
   },

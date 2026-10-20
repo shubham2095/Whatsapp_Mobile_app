@@ -49,8 +49,16 @@ export default function InboxTab() {
       .filter((c) => filter !== 'hot' || c.contact?.is_hot)
       .filter((c) => filter !== 'pinned' || pinned.has(c.id))
       .filter((c) => !agent || c.assigned_agent?.name === agent);
-    // Pinned chats float to the top; the server order is otherwise kept (Array.sort is stable).
-    return [...filtered].sort((a, b) => Number(pinned.has(b.id)) - Number(pinned.has(a.id)));
+    // The server lists hot contacts first, so a new message from an ordinary customer would sit behind every hot
+    // chat and never show. Like the website, sort by the latest message instead: pinned chats first, then newest.
+    // (The Hot filter ranks by the AI's priority score, then newest.)
+    const latest = (c) => (c.last_message_at ? Date.parse(c.last_message_at) || 0 : 0);
+    return [...filtered].sort(
+      (a, b) =>
+        Number(pinned.has(b.id)) - Number(pinned.has(a.id)) ||
+        (filter === 'hot' ? (b.contact?.hot_score ?? 0) - (a.contact?.hot_score ?? 0) : 0) ||
+        latest(b) - latest(a),
+    );
   }, [all, filter, agent, pinned]);
 
   const openChat = useCallback((c) => {

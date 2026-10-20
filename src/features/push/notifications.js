@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
 import { registerDevice, unregisterDevice } from '@/api/devices';
+import { setPushActive } from '@/lib/polling';
 import { clearPushToken, getPushToken, savePushToken } from '@/lib/storage';
 import { IN_EXPO_GO, Notifications } from './expoNotifications';
 
@@ -69,6 +70,7 @@ export async function registerForPush() {
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
     await registerDevice({ token, platform: Platform.OS });
     await savePushToken(token);
+    setPushActive(true); // new messages now refresh the lists by themselves, so polling can relax
     return { status: 'registered', token };
   } catch (e) {
     return { status: 'error', message: e?.message || 'Could not set up notifications.' };
@@ -83,6 +85,7 @@ export async function unregisterFromPush() {
     await unregisterDevice(token);
   } catch {}
   await clearPushToken();
+  setPushActive(false);
 }
 
 // Removes already-delivered notifications of one chat from the shade (called when the chat opens).

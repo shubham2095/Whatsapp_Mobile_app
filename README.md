@@ -108,8 +108,10 @@ How it fits together:
 - **Access control** follows the web app: the backend sends `permissions`, `plan_features` and `plan_limits` with the
   user, and `src/lib/permissions.js` turns them into `can()`, `hasFeature()` and `planAllows()` checks. The backend
   stays the source of truth; hiding a button is only a convenience.
-- **Live data**: the backend has no realtime channel, so lists poll while a screen is focused (inbox 15 s, open chat
-  8 s, running campaigns 5 s) and push notifications cover the background.
+- **Live data**: the backend has no realtime channel, so lists poll while a screen is focused. The wait starts at 15 s
+  (inbox) / 8 s (open chat), doubles while nothing changes (up to 60 s / 30 s, or 120 s / 60 s when push works), gets a
+  random spread, and slows further while the server is busy (`src/lib/polling.js`). A push notification refreshes the
+  lists at once. Running campaigns and bulk sends still poll every 5 s: those polls also push the sending along.
 - **State**: TanStack Query for server data, React state for the rest.
 
 ## Building

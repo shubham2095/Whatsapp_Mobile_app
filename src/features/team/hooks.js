@@ -2,7 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as agentsApi from '@/api/agents';
 import * as teamApi from '@/api/team';
 
-export const useTeam = (enabled = true) => useQuery({ queryKey: ['team'], queryFn: teamApi.listTeam, enabled });
+// The team rarely changes (adding or editing a member refreshes it), so keep it for a few minutes.
+export const useTeam = (enabled = true) => useQuery({ queryKey: ['team'], queryFn: teamApi.listTeam, enabled, staleTime: 5 * 60_000 });
 
 function useTeamMutation(fn) {
   const queryClient = useQueryClient();

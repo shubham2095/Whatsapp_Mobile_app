@@ -1,25 +1,60 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useIsFocused } from 'expo-router';
+import { useFocusEffect, useIsFocused } from 'expo-router';
 import * as inbox from '@/api/inbox';
 import { listTemplates } from '@/api/templates';
+import { nextPollDelay } from '@/lib/polling';
 
 // The backend has no realtime channel yet, so lists poll while their screen is focused
 // (same cadence as the web app). Push notifications (Phase 3) cover the background case.
-const LIST_POLL_MS = 15_000;
-const CHAT_POLL_MS = 8_000;
+// Polling backs off while nothing changes and when the server is busy (see lib/polling.js); push notifications refresh
+// the lists at once, so with push working the safety-net polling can be much slower.
+const INBOX_POLL = { base: 15_000, cap: 60_000, capWithPush: 120_000 };
+const CHAT_POLL = { base: 8_000, cap: 30_000, capWithPush: 60_000 };
+// The inbox wants the newest chat first. A server with the "sort=recent" option sends exactly that, so small pages are
+// enough and the first screen is quick. An older server lists hot contacts first and ignores the option, so a new chat
+// from an ordinary customer could sit on a later page: then the app asks for big pages instead. It finds out from the
+// first answer (is it in newest-first order?) and remembers for the rest of the session.
+const SMALL_PAGE = 30;
+const BIG_PAGE = 100;
+let serverSortsByRecent = null; // null = not known yet
+
+const latestOf = (c) => (c.last_message_at ? Date.parse(c.last_message_at) || 0 : 0);
+const isNewestFirst = (list) => list.every((c, i) => i === 0 || latestOf(list[i - 1]) >= latestOf(c));
+
+async function fetchConversationPage({ status, search, page }) {
+  const size = serverSortsByRecent === false ? BIG_PAGE : SMALL_PAGE;
+  const result = await inbox.listConversations({ status, search, sort: 'recent', page, perPage: size });
+  if (serverSortsByRecent === null && page === 1) {
+    serverSortsByRecent = result.conversations.length < 3 || isNewestFirst(result.conversations);
+    if (serverSortsByRecent === false) return inbox.listConversations({ status, search, sort: 'recent', page, perPage: BIG_PAGE });
+  }
+  return result;
+}
+
+// Coming back to a screen shows what it has at once and, if that is older than a few seconds, refreshes it right away
+// (polling may have slowed down while the screen was away).
+function useRefreshWhenFocused({ dataUpdatedAt, refetch }, olderThanMs = 10_000) {
+  useFocusEffect(
+    useCallback(() => {
+      if (dataUpdatedAt && Date.now() - dataUpdatedAt > olderThanMs) refetch();
+    }, [dataUpdatedAt, refetch, olderThanMs]),
+  );
+}
 
 export function useConversations({ status, search }) {
   const focused = useIsFocused();
-  return useInfiniteQuery({
+  const query = useInfiniteQuery({
     queryKey: ['conversations', { status: status ?? null, search: search ?? '' }],
-    queryFn: ({ pageParam }) => inbox.listConversations({ status, search, page: pageParam }),
+    queryFn: ({ pageParam }) => fetchConversationPage({ status, search, page: pageParam }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.meta.current_page < last.meta.last_page ? last.meta.current_page + 1 : undefined),
-    refetchInterval: focused ? LIST_POLL_MS : false,
+    refetchInterval: (query) => (focused ? nextPollDelay(query, INBOX_POLL) : false),
     refetchOnWindowFocus: true,
     placeholderData: keepPreviousData,
   });
+  useRefreshWhenFocused(query);
+  return query;
 }
 
 export function useMessages(conversationId) {
@@ -29,9 +64,10 @@ export function useMessages(conversationId) {
     queryFn: ({ pageParam }) => inbox.listMessages(conversationId, { cursor: pageParam }),
     initialPageParam: null,
     getNextPageParam: (last) => (last.has_more ? last.next_cursor : undefined),
-    refetchInterval: focused ? CHAT_POLL_MS : false,
+    refetchInterval: (query) => (focused ? nextPollDelay(query, CHAT_POLL) : false),
     refetchOnWindowFocus: true,
   });
+  useRefreshWhenFocused(query, 6_000);
 
   // Newest first (the chat list is inverted). Polling can overlap pages, so de-dupe by id.
   const messages = useMemo(() => {
