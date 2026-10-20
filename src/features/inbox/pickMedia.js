@@ -46,3 +46,25 @@ export async function pickDocument() {
   const a = result.assets[0];
   return toFile({ uri: a.uri, name: a.name, mimeType: a.mimeType, size: a.size }, 'application/octet-stream');
 }
+
+// Header files for a bulk send. WhatsApp templates accept only these formats: JPG or PNG for IMAGE, MP4 for VIDEO,
+// PDF for DOCUMENT. `format` is the template's header format. Resolves like the other pickers above.
+const HEADER_RULES = {
+  IMAGE: { mimes: ['image/jpeg', 'image/png'], hint: 'JPG or PNG' },
+  VIDEO: { mimes: ['video/mp4'], hint: 'MP4' },
+  DOCUMENT: { mimes: ['application/pdf'], hint: 'PDF' },
+};
+
+export async function pickHeaderFile(format) {
+  const rule = HEADER_RULES[format];
+  const picked =
+    format === 'DOCUMENT'
+      ? await pickDocument()
+      : fromImagePicker(
+          await ImagePicker.launchImageLibraryAsync({ mediaTypes: [format === 'VIDEO' ? 'videos' : 'images'], quality: 0.85 }),
+          format === 'VIDEO' ? 'video/mp4' : 'image/jpeg',
+        );
+  if (!picked || picked.error) return picked;
+  if (!rule.mimes.includes(picked.file.mimeType)) return { error: `This header must be a ${rule.hint} file.` };
+  return picked;
+}

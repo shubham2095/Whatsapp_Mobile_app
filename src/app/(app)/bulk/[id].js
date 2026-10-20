@@ -1,8 +1,10 @@
-import { ActivityIndicator, FlatList, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { Badge, Banner, Button, Card, ProgressBar, Text } from '@/components/ui';
+import { useToast } from '@/components/Toast';
 import { STATUS_TONE } from '@/features/campaigns/meta';
-import { useBulkSend } from '@/features/campaigns/hooks';
+import { useBulkSend, useRetryBulk } from '@/features/campaigns/hooks';
+import { haptics } from '@/lib/haptics';
 import { formatListTime } from '@/lib/format';
 import { displayPhone } from '@/lib/phone';
 import { useTheme } from '@/theme/ThemeProvider';
@@ -11,6 +13,21 @@ export default function BulkDetail() {
   const { id } = useLocalSearchParams();
   const { colors, spacing } = useTheme();
   const { data, isLoading, isError, error, refetch } = useBulkSend(id);
+  const retry = useRetryBulk(id);
+  const toast = useToast();
+
+  function confirmRetry() {
+    Alert.alert('Send again', 'Only the numbers that failed get the message again, with the same template and values.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Send again',
+        onPress: () => {
+          haptics.tap();
+          retry.mutate(undefined, { onSuccess: () => toast.show('Sending the failed numbers again') });
+        },
+      },
+    ]);
+  }
 
   if (isLoading) return <ActivityIndicator style={{ marginTop: spacing.xxl }} color={colors.primary} />;
   if (isError) {
@@ -45,6 +62,16 @@ export default function BulkDetail() {
           {pending > 0 ? <Text variant="small" muted>Waiting {pending}</Text> : null}
         </View>
       </Card>
+      {send.failed_count > 0 && send.status !== 'processing' ? (
+        <Button
+          title={`Send again to ${send.failed_count} failed ${send.failed_count === 1 ? 'number' : 'numbers'}`}
+          icon="refresh"
+          variant="outline"
+          loading={retry.isPending}
+          onPress={confirmRetry}
+        />
+      ) : null}
+      {retry.isError ? <Banner message={retry.error.message} /> : null}
       <Text variant="subheading">Numbers</Text>
     </View>
   );

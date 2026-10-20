@@ -76,6 +76,20 @@ export function useSendBulk() {
   return useMutation({ mutationFn: bulkApi.sendBulk, onSuccess: () => queryClient.invalidateQueries({ queryKey: ['bulk'] }) });
 }
 
+// Re-sends only the failed numbers. The server answers with the refreshed send, so the screen updates at once.
+export function useRetryBulk(id) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => bulkApi.retryBulkSend(id),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['bulk', 'detail', id], data);
+      queryClient.invalidateQueries({ queryKey: ['bulk', 'list'] });
+    },
+  });
+}
+
+export const useUploadBulkHeader = () => useMutation({ mutationFn: bulkApi.uploadBulkHeader });
+
 // What a chosen template needs filled in: how many {{n}} body variables, and a media header type.
 export function useTemplateNeeds(templateId) {
   const query = useTemplate(templateId);

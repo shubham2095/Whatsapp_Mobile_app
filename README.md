@@ -16,7 +16,8 @@ Built with **Expo SDK 57**, **React Native 0.86**, **Expo Router** and plain **J
 - **Contacts**: search, hot / blocked / opted-out filters, add and edit, import from the phone book or a CSV file,
   hot list with AI priority, black list.
 - **Campaigns and bulk send**: create, schedule, start, pause and cancel campaigns, per-recipient status, send one
-  template to a list of numbers, CSV reports.
+  template to a list of numbers (with variables and a photo, video or PDF header picked from the phone), send again to
+  the numbers that failed, CSV reports.
 - **Templates**: list, preview, create and submit to Meta, sync.
 - **WhatsApp numbers**: connect with a System User token, sync, register, enable sending, update token, send a test.
 - **Dashboard and analytics**: KPI cards, daily message chart, campaign performance.
