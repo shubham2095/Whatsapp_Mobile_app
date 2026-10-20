@@ -82,7 +82,7 @@ export default function LoginWithOtp() {
     <AuthShell
       title="Sign in with a code"
       subtitle={step === 'phone' ? 'We will send a 6-digit code to the mobile number saved on your account.' : `Enter the code sent to ${phone.trim()}.`}
-      footer={<Link href="/login" style={{ color: '#fff', fontWeight: '700' }}>Sign in with email instead</Link>}
+      footer={<Link href="/login" style={{ color: colors.primary, fontWeight: '700' }}>Sign in with email instead</Link>}
     >
       <Banner message={banner} />
 
@@ -90,6 +90,7 @@ export default function LoginWithOtp() {
         <>
           <Input
             label="Mobile number"
+            icon="call-outline"
             value={phone}
             onChangeText={setPhone}
             keyboardType="phone-pad"

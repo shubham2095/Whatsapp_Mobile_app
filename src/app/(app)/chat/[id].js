@@ -203,6 +203,9 @@ export default function Chat() {
           scrollEventThrottle={100}
           inverted
           data={listData}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={11}
           onScrollToIndexFailed={({ index, averageItemLength }) => {
             listRef.current?.scrollToOffset({ offset: index * averageItemLength, animated: false });
             setTimeout(() => listRef.current?.scrollToIndex({ index, viewPosition: 0.5, animated: true }), 100);

@@ -4,8 +4,10 @@ import { resetPassword } from '@/api/auth';
 import { Banner, Button, Input } from '@/components/ui';
 import { AuthShell } from '@/features/auth/AuthShell';
 import { fieldError, isValidEmail } from '@/lib/errors';
+import { useTheme } from '@/theme/ThemeProvider';
 
 export default function ResetPassword() {
+  const { colors } = useTheme();
   const params = useLocalSearchParams();
   const [form, setForm] = useState({
     email: typeof params.email === 'string' ? params.email : '',
@@ -51,7 +53,7 @@ export default function ResetPassword() {
     <AuthShell
       title="Reset password"
       subtitle="Enter the token from your reset email and choose a new password."
-      footer={<Link href="/login" style={{ color: '#fff', fontWeight: '700' }}>Back to sign in</Link>}
+      footer={<Link href="/login" style={{ color: colors.primary, fontWeight: '700' }}>Back to sign in</Link>}
     >
       {done ? (
         <>

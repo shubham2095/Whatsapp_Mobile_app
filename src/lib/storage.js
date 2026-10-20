@@ -17,9 +17,21 @@ async function remove(key) {
   } catch {}
 }
 
-export const getToken = () => read(TOKEN_KEY);
-export const saveToken = (token) => SecureStore.setItemAsync(TOKEN_KEY, token);
-export const clearToken = () => remove(TOKEN_KEY);
+// The token is read from the secure store once and then kept in memory: every API call asks for it, and each read
+// would otherwise be a slow call into the phone's keystore. undefined = not read yet, null = signed out.
+let tokenInMemory;
+export async function getToken() {
+  if (tokenInMemory === undefined) tokenInMemory = await read(TOKEN_KEY);
+  return tokenInMemory;
+}
+export async function saveToken(token) {
+  await SecureStore.setItemAsync(TOKEN_KEY, token);
+  tokenInMemory = token;
+}
+export async function clearToken() {
+  tokenInMemory = null;
+  await remove(TOKEN_KEY);
+}
 
 // The Expo push token this phone registered with the backend (needed to unregister on logout).
 export const getPushToken = () => read(PUSH_TOKEN_KEY);

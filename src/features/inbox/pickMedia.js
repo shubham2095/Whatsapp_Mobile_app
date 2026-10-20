@@ -1,4 +1,5 @@
 import * as DocumentPicker from 'expo-document-picker';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 
 // WhatsApp (and the backend) cap uploads at 16 MB.
@@ -73,12 +74,13 @@ export async function pickHeaderFile(format, { maxBytes } = {}) {
   return picked;
 }
 
-// A square profile photo as a data URL, which is what the server stores (it allows about 2 MB). The photo is cropped to
-// a square and compressed hard, so it is normally far below that. source: 'gallery' | 'camera'.
-const MAX_AVATAR_CHARS = 2_900_000;
+// A square profile photo as a data URL, which is what the server stores. The photo is cropped to a square, shrunk to
+// 256 px and saved as a JPEG, so it is only a few KB: the server sends it back with every sign-in and profile call,
+// and the phone keeps a copy of it, so a big photo would slow the whole app down. source: 'gallery' | 'camera'.
+const AVATAR_PIXELS = 256;
 
 export async function pickAvatar(source = 'gallery') {
-  const options = { mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.3, base64: true };
+  const options = { mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.8 };
   let result;
   if (source === 'camera') {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
@@ -88,9 +90,16 @@ export async function pickAvatar(source = 'gallery') {
     result = await ImagePicker.launchImageLibraryAsync(options);
   }
   if (result.canceled || !result.assets?.length) return null;
-  const a = result.assets[0];
-  if (!a.base64) return { error: 'Could not read that photo. Try another one.' };
-  const dataUrl = `data:${a.mimeType || 'image/jpeg'};base64,${a.base64}`;
-  if (dataUrl.length > MAX_AVATAR_CHARS) return { error: 'That photo is too large. Pick a smaller one.' };
-  return { dataUrl };
+
+  try {
+    const small = await (await ImageManipulator.manipulate(result.assets[0].uri).resize({ width: AVATAR_PIXELS }).renderAsync()).saveAsync({
+      format: SaveFormat.JPEG,
+      compress: 0.75,
+      base64: true,
+    });
+    if (!small.base64) return { error: 'Could not read that photo. Try another one.' };
+    return { dataUrl: `data:image/jpeg;base64,${small.base64}` };
+  } catch {
+    return { error: 'Could not read that photo. Try another one.' };
+  }
 }

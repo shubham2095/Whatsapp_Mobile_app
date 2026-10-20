@@ -6,7 +6,8 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { Text } from './Text';
 
 // `password` adds a show/hide toggle and hides the text by default. The border turns teal while typing.
-export const Input = forwardRef(function Input({ label, error, password = false, style, onFocus, onBlur, ...rest }, ref) {
+// `icon`: an Ionicons name shown at the start of the field (mail, lock, call...). It turns teal while the field is active.
+export const Input = forwardRef(function Input({ label, error, icon, password = false, style, onFocus, onBlur, ...rest }, ref) {
   const { colors, radius, spacing, fontSize } = useTheme();
   const [hidden, setHidden] = useState(true);
   const [focused, setFocused] = useState(false);
@@ -14,6 +15,11 @@ export const Input = forwardRef(function Input({ label, error, password = false,
     <View style={{ marginBottom: spacing.lg }}>
       {label ? <Text variant="small" muted style={{ marginBottom: spacing.xs, fontWeight: '600' }}>{label}</Text> : null}
       <View>
+        {icon ? (
+          <View pointerEvents="none" style={{ position: 'absolute', left: 14, top: 0, bottom: 0, justifyContent: 'center', zIndex: 1 }}>
+            <Ionicons name={icon} size={20} color={error ? colors.danger : focused ? colors.primary : colors.muted} />
+          </View>
+        ) : null}
         <TextInput
           ref={ref}
           placeholderTextColor={colors.muted}
@@ -38,6 +44,7 @@ export const Input = forwardRef(function Input({ label, error, password = false,
               borderColor: error ? colors.danger : focused ? colors.primary : colors.border,
               borderRadius: radius.md,
               paddingHorizontal: spacing.lg,
+              paddingLeft: icon ? 46 : spacing.lg,
               paddingRight: password ? 48 : spacing.lg,
               paddingVertical: spacing.md,
               fontSize: fontSize.md,

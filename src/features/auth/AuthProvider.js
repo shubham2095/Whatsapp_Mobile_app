@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { AppState } from 'react-native';
 import { onlineManager } from '@tanstack/react-query';
 import * as authApi from '@/api/auth';
-import { setUnauthorizedHandler } from '@/api/client';
+import { holdRequestsUntil, setUnauthorizedHandler } from '@/api/client';
 import { clearBillingDetails } from '@/features/billing/billingDetails';
 import { unregisterFromPush } from '@/features/push/notifications';
 import { setMonitoringUser } from '@/lib/monitoring';
@@ -54,6 +54,31 @@ export function AuthProvider({ children }) {
       setState({ status: 'guest', user: null, stale: false });
       return;
     }
+
+    // Fast start: open at once with the user saved on the phone (and the saved lists), and check the session in the
+    // background. Other calls wait for that check, so nothing is sent with a token that is about to be replaced.
+    const saved = await loadCachedUser();
+    if (saved) {
+      setAuthed(saved);
+      holdRequestsUntil(
+        (async () => {
+          try {
+            await rotateToken();
+          } catch (e) {
+            if (e.status === 401) return; // the handler has already signed us out
+          }
+          try {
+            const { user } = await authApi.me();
+            setAuthed(user);
+          } catch (e) {
+            if (e.status === 401) return;
+            setAuthed(saved, true); // no signal: stay on the saved user and check again once the internet is back
+          }
+        })(),
+      );
+      return;
+    }
+
     try {
       try {
         await rotateToken();

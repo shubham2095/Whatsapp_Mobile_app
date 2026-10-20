@@ -9,12 +9,13 @@ import { Button, Card, ProgressBar, Text } from '@/components/ui';
 import { useUser } from '@/features/auth/AuthProvider';
 import { useTeam } from '@/features/team/hooks';
 import { can, hasFeature } from '@/lib/permissions';
+import { useReadyAfter } from '@/lib/useReadyAfter';
 import { useTheme } from '@/theme/ThemeProvider';
 import { LIMIT_LABELS } from './planMeta';
 
 // One request per number: ask for a single row and read the total from the page info.
 const total = (fetchOne) => async () => (await fetchOne()).meta.total;
-const COUNT_STALE_MS = 60_000;
+const COUNT_STALE_MS = 5 * 60_000;
 
 // How much of the plan each feature has used, for the dashboard. Only shown for what the user is
 // allowed to see; a limit of -1 / empty means unlimited.
@@ -22,6 +23,8 @@ export function UsageMeters() {
   const user = useUser();
   const { colors, spacing } = useTheme();
   const limits = user.plan_limits;
+  // The dashboard's main numbers load first; these five small counts start a moment later so they do not compete.
+  const ready = useReadyAfter();
 
   const canSee = {
     max_contacts: can(user, 'contacts.view'),
@@ -30,7 +33,7 @@ export function UsageMeters() {
     max_chatbots: can(user, 'whatsapp.view') && hasFeature(user, 'chatbot'),
     max_agents: can(user, 'team.view'),
   };
-  const want = (key) => !!limits && limits[key] !== undefined && canSee[key];
+  const want = (key) => ready && !!limits && limits[key] !== undefined && canSee[key];
 
   const contacts = useQuery({ queryKey: ['contacts', 'count'], queryFn: total(() => listContacts({ perPage: 1 })), enabled: want('max_contacts'), staleTime: COUNT_STALE_MS });
   const campaigns = useQuery({ queryKey: ['campaigns', 'count'], queryFn: total(() => listCampaigns({ perPage: 1 })), enabled: want('max_campaigns'), staleTime: COUNT_STALE_MS });

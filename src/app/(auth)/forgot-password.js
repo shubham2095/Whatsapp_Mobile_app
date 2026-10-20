@@ -37,7 +37,7 @@ export default function ForgotPassword() {
       title="Forgot password"
       subtitle="We'll email you a link to reset it."
       footer={
-        <Link href="/login" style={{ color: '#fff', fontWeight: '700' }}>Back to sign in</Link>
+        <Link href="/login" style={{ color: colors.primary, fontWeight: '700' }}>Back to sign in</Link>
       }
     >
       {sent ? (

@@ -58,21 +58,21 @@ export default function Register() {
       subtitle="Set up your company workspace in a minute."
       legalPrefix="By creating an account you agree to our"
       footer={
-        <Text style={{ color: '#fff' }}>
+        <Text muted>
           Already have an account?{' '}
-          <Link href="/login" style={{ color: colors.accent, fontWeight: '700' }}>Sign in</Link>
+          <Link href="/login" style={{ color: colors.primary, fontWeight: '700' }}>Sign in</Link>
         </Text>
       }
     >
       <Banner message={googleError ?? bannerMessage} />
-      <Input label="Company name" value={form.company_name} onChangeText={set('company_name')} autoCapitalize="words" error={err('company_name')} />
-      <Input label="Your name" value={form.name} onChangeText={set('name')} autoCapitalize="words" autoComplete="name" error={err('name')} />
-      <Input label="Email" value={form.email} onChangeText={set('email')} keyboardType="email-address" autoCapitalize="none" autoComplete="email" error={err('email')} />
-      <Input label="Phone (optional)" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" autoComplete="tel" error={err('phone')} />
-      <Input label="Password" password value={form.password} onChangeText={set('password')} autoComplete="new-password" error={err('password')} />
-      <Input label="Confirm password" password value={form.password_confirmation} onChangeText={set('password_confirmation')} autoComplete="new-password" error={err('password_confirmation')} />
-      <Button title="Create account" loading={loading} onPress={submit} />
-      <GoogleButton onError={setGoogleError} style={{ marginTop: 8 }} />
+      <Input label="Company name" icon="business-outline" value={form.company_name} onChangeText={set('company_name')} autoCapitalize="words" error={err('company_name')} />
+      <Input label="Your name" icon="person-outline" value={form.name} onChangeText={set('name')} autoCapitalize="words" autoComplete="name" error={err('name')} />
+      <Input label="Email" icon="mail-outline" value={form.email} onChangeText={set('email')} keyboardType="email-address" autoCapitalize="none" autoComplete="email" error={err('email')} />
+      <Input label="Phone (optional)" icon="call-outline" value={form.phone} onChangeText={set('phone')} keyboardType="phone-pad" autoComplete="tel" error={err('phone')} />
+      <Input label="Password" icon="lock-closed-outline" password value={form.password} onChangeText={set('password')} autoComplete="new-password" error={err('password')} />
+      <Input label="Confirm password" icon="lock-closed-outline" password value={form.password_confirmation} onChangeText={set('password_confirmation')} autoComplete="new-password" error={err('password_confirmation')} />
+      <Button title="Create account" size="lg" loading={loading} onPress={submit} />
+      <GoogleButton onError={setGoogleError} style={{ marginTop: 12 }} />
     </AuthShell>
   );
 }

@@ -12,9 +12,10 @@ export const forgotPassword = (email) =>
 
 export const resetPassword = (body) => request('/auth/reset-password', { method: 'POST', body, token: null });
 
-export const me = () => request('/auth/me');
+// gate: false = do not wait for the start-up session check, because these calls ARE that check (see client.js).
+export const me = () => request('/auth/me', { gate: false });
 
-export const refresh = () => request('/auth/refresh', { method: 'POST' });
+export const refresh = () => request('/auth/refresh', { method: 'POST', gate: false });
 
 export const logout = () => request('/auth/logout', { method: 'POST' });
 

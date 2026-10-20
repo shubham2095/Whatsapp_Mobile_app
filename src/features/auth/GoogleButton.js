@@ -5,7 +5,7 @@ import { useAuth } from './AuthProvider';
 import { signInWithGoogle } from './googleSignIn';
 
 // "Continue with Google". `onError(message)` shows a problem on the screen; `onError(null)` clears it.
-export function GoogleButton({ onError, style }) {
+export function GoogleButton({ onError, style, compact = false }) {
   const { loginWithPayload } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -26,5 +26,5 @@ export function GoogleButton({ onError, style }) {
     setLoading(false);
   }
 
-  return <Button title="Continue with Google" variant="outline" icon="logo-google" loading={loading} onPress={press} style={style} />;
+  return <Button title={compact ? 'Google' : 'Continue with Google'} variant="outline" icon="logo-google" loading={loading} onPress={press} style={style} />;
 }

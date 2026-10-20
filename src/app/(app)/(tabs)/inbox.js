@@ -160,6 +160,9 @@ export default function InboxTab() {
       ) : (
         <FlatList
           data={conversations}
+          initialNumToRender={10}
+          maxToRenderPerBatch={8}
+          windowSize={9}
           keyExtractor={(c) => c.id}
           renderItem={renderItem}
           extraData={pinned}

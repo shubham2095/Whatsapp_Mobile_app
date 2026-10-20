@@ -252,6 +252,9 @@ export function ContactsList({ fixedFilter }) {
       ) : (
         <FlatList
           data={contacts}
+          initialNumToRender={12}
+          maxToRenderPerBatch={8}
+          windowSize={9}
           keyExtractor={(c) => c.id}
           renderItem={renderItem}
           extraData={selected}

@@ -15,6 +15,20 @@ export class ApiError extends Error {
 }
 
 let onUnauthorized = null;
+
+// While the app checks the saved session in the background at start-up (a token refresh), other calls wait for it:
+// a refreshed token makes the old one invalid, so a call sent in the middle would be rejected and sign the user out.
+let gate = null;
+export function holdRequestsUntil(promise) {
+  const mine = promise.catch(() => {});
+  gate = mine;
+  mine.then(() => {
+    if (gate === mine) gate = null;
+  });
+}
+
+// A call that gets no answer should fail with a clear message instead of leaving the screen spinning for minutes.
+const TIMEOUT_MS = { read: 25_000, write: 40_000, upload: 120_000 };
 // The auth layer registers a handler that clears the session and routes to login.
 export function setUnauthorizedHandler(fn) {
   onUnauthorized = fn;
@@ -36,7 +50,8 @@ function toQuery(params) {
  * request('/whatsapp/conversations/1/send-media', { method: 'POST', body: formData, multipart: true })
  * Resolves with `data` from the response envelope.
  */
-export async function request(path, { method = 'GET', body, params, multipart = false, token } = {}) {
+export async function request(path, { method = 'GET', body, params, multipart = false, token, gate: useGate = true } = {}) {
+  if (gate && useGate && token === undefined) await gate;
   const authToken = token === undefined ? await getToken() : token;
   const headers = { Accept: 'application/json' };
   if (authToken) headers.Authorization = `Bearer ${authToken}`;
@@ -51,14 +66,20 @@ export async function request(path, { method = 'GET', body, params, multipart = 
     }
   }
 
-  let res;
-  try {
-    res = await fetch(API_URL + path + toQuery(params), { method, headers, body: payload });
-  } catch {
-    throw new ApiError('Network error. Check your connection and try again.');
-  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), multipart ? TIMEOUT_MS.upload : method === 'GET' ? TIMEOUT_MS.read : TIMEOUT_MS.write);
 
-  const json = await res.json().catch(() => ({}));
+  let res;
+  let json;
+  try {
+    res = await fetch(API_URL + path + toQuery(params), { method, headers, body: payload, signal: controller.signal });
+    json = await res.json().catch(() => ({}));
+  } catch {
+    if (controller.signal.aborted) throw new ApiError('The server is taking too long to answer. Please try again.', { code: 'timeout' });
+    throw new ApiError('Network error. Check your connection and try again.');
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (res.status === 401 && authToken && onUnauthorized) onUnauthorized();
 
