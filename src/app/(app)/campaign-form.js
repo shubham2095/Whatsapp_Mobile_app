@@ -1,11 +1,20 @@
 import { useState } from 'react';
 import { router } from 'expo-router';
 import { DateTimeField } from '@/components/DateTimeField';
-import { Banner, Button, Card, Input, Screen, Text } from '@/components/ui';
+import { Banner, Button, Card, ChipSelect, Input, Screen, Text } from '@/components/ui';
 import { useCreateCampaign, useTemplateNeeds } from '@/features/campaigns/hooks';
 import { TemplateSelect } from '@/features/campaigns/TemplateSelect';
 import { fieldError } from '@/lib/errors';
 import { useTheme } from '@/theme/ThemeProvider';
+
+// The server filters contacts by where they came from (contacts.source). Tags cannot be used: contact tags are stored
+// as text on the contact, while the server's tag audience reads a separate table that nothing fills in.
+const AUDIENCES = [
+  { value: 'all', label: 'Everyone', hint: 'All your contacts.' },
+  { value: 'manual', label: 'Added by hand', hint: 'Only contacts you added yourself.' },
+  { value: 'import', label: 'Imported', hint: 'Only contacts you imported from a file or your phone.' },
+  { value: 'inbound', label: 'Messaged us', hint: 'Only people who started a chat with you.' },
+];
 
 export default function CampaignForm() {
   const { spacing } = useTheme();
@@ -13,6 +22,7 @@ export default function CampaignForm() {
   const [name, setName] = useState('');
   const [template, setTemplate] = useState(null);
   const [when, setWhen] = useState(null);
+  const [audience, setAudience] = useState('all');
   const [error, setError] = useState(null);
   const [local, setLocal] = useState({});
   const needs = useTemplateNeeds(template?.id);
@@ -30,7 +40,12 @@ export default function CampaignForm() {
     if (Object.keys(p).length) return;
 
     create.mutate(
-      { name: name.trim(), template_id: template.id, scheduled_at: when ? when.toISOString() : undefined },
+      {
+        name: name.trim(),
+        template_id: template.id,
+        audience_filter: audience === 'all' ? undefined : { source: audience },
+        scheduled_at: when ? when.toISOString() : undefined,
+      },
       { onSuccess: (res) => router.replace({ pathname: '/campaign/[id]', params: { id: res.campaign.id } }), onError: setError },
     );
   }
@@ -57,8 +72,9 @@ export default function CampaignForm() {
 
       <Card style={{ marginBottom: spacing.md, gap: spacing.xs }}>
         <Text style={{ fontWeight: '600' }}>Who receives it</Text>
+        <ChipSelect options={AUDIENCES} value={audience} onChange={setAudience} />
         <Text variant="small" muted>
-          All your contacts, except blocked contacts and those who opted out. The list is fixed when you create the campaign, so new contacts added later are not included.
+          {AUDIENCES.find((a) => a.value === audience).hint} Blocked contacts and those who opted out are always left out. The list is fixed when you create the campaign, so new contacts added later are not included.
         </Text>
       </Card>
 
