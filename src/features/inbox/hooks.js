@@ -22,13 +22,65 @@ let serverSortsByRecent = null; // null = not known yet
 const latestOf = (c) => (c.last_message_at ? Date.parse(c.last_message_at) || 0 : 0);
 const isNewestFirst = (list) => list.every((c, i) => i === 0 || latestOf(list[i - 1]) >= latestOf(c));
 
+// ---- cheap updates: ask only for what changed -------------------------------------------------------------------
+// A server with /whatsapp/conversations/changes lets the app keep the inbox current with tiny answers (usually 0 to 2
+// chats) instead of downloading the whole list again and again. The full list then only loads once, and as a slow safety
+// net. Without that endpoint everything works as before (full list, backing-off polling).
+let deltaSupported = null; // null = not known yet
+let deltaCursor = null; // server time up to which the cached lists are current
+const DELTA_POLL = { base: 10_000, cap: 45_000, capWithPush: 90_000 };
+const FULL_LIST_SAFETY_POLL_MS = 5 * 60_000;
+
+function noteFullList(result) {
+  const serverTime = result.meta?.server_time;
+  if (serverTime) {
+    deltaSupported = true;
+    deltaCursor = serverTime;
+  } else if (deltaSupported === null) {
+    deltaSupported = false;
+  }
+}
+
+// Puts changed chats into one cached list: updates the ones it has, drops those that no longer fit its status filter,
+// and adds new ones at the top.
+function mergeChanges(old, changed, status) {
+  if (!old?.pages?.length) return old;
+  const byId = new Map(changed.map((c) => [c.id, c]));
+  const fits = (c) => !status || c.status === status;
+  const pages = old.pages.map((p) => ({
+    ...p,
+    conversations: p.conversations.flatMap((c) => {
+      const next = byId.get(c.id);
+      if (!next) return [c];
+      return fits(next) ? [next] : [];
+    }),
+  }));
+  const present = new Set(pages.flatMap((p) => p.conversations.map((c) => c.id)));
+  const fresh = changed.filter((c) => !present.has(c.id) && fits(c));
+  if (fresh.length) pages[0] = { ...pages[0], conversations: [...fresh, ...pages[0].conversations] };
+  return { ...old, pages };
+}
+
+function applyChanges(queryClient, changed) {
+  for (const q of queryClient.getQueryCache().findAll({ queryKey: ['conversations'] })) {
+    const filters = q.queryKey[1];
+    if (!filters || filters.search) continue; // a search result cannot be patched: the next full load fixes it
+    queryClient.setQueryData(q.queryKey, (old) => mergeChanges(old, changed, filters.status));
+  }
+}
+
 async function fetchConversationPage({ status, search, page }) {
   const size = serverSortsByRecent === false ? BIG_PAGE : SMALL_PAGE;
   const result = await inbox.listConversations({ status, search, sort: 'recent', page, perPage: size });
   if (serverSortsByRecent === null && page === 1) {
     serverSortsByRecent = result.conversations.length < 3 || isNewestFirst(result.conversations);
-    if (serverSortsByRecent === false) return inbox.listConversations({ status, search, sort: 'recent', page, perPage: BIG_PAGE });
+    if (serverSortsByRecent === false) {
+      const big = await inbox.listConversations({ status, search, sort: 'recent', page, perPage: BIG_PAGE });
+      noteFullList(big);
+      return big;
+    }
   }
+  if (page === 1) noteFullList(result);
   return result;
 }
 
@@ -44,16 +96,39 @@ function useRefreshWhenFocused({ dataUpdatedAt, refetch }, olderThanMs = 10_000)
 
 export function useConversations({ status, search }) {
   const focused = useIsFocused();
+  const queryClient = useQueryClient();
   const query = useInfiniteQuery({
     queryKey: ['conversations', { status: status ?? null, search: search ?? '' }],
     queryFn: ({ pageParam }) => fetchConversationPage({ status, search, page: pageParam }),
     initialPageParam: 1,
     getNextPageParam: (last) => (last.meta.current_page < last.meta.last_page ? last.meta.current_page + 1 : undefined),
-    refetchInterval: (query) => (focused ? nextPollDelay(query, INBOX_POLL) : false),
+    refetchInterval: (q) => (!focused ? false : deltaSupported ? FULL_LIST_SAFETY_POLL_MS : nextPollDelay(q, INBOX_POLL)),
     refetchOnWindowFocus: true,
     placeholderData: keepPreviousData,
   });
-  useRefreshWhenFocused(query);
+
+  // The small "what changed" question, asked while the inbox is on screen.
+  const changes = useQuery({
+    queryKey: ['conversations-changes'],
+    queryFn: async () => {
+      try {
+        const res = await inbox.listConversationChanges(deltaCursor);
+        if (res.server_time) deltaCursor = res.server_time;
+        if (res.has_more) queryClient.invalidateQueries({ queryKey: ['conversations'] });
+        else if (res.conversations.length) applyChanges(queryClient, res.conversations);
+        return { changed: res.conversations.length }; // same value while nothing changes, so polling can back off
+      } catch (e) {
+        if (e.status === 404 || e.status === 405) deltaSupported = false; // an older server: back to the full list
+        throw e;
+      }
+    },
+    enabled: focused && !!query.data && deltaSupported === true,
+    refetchInterval: (q) => (focused && deltaSupported ? nextPollDelay(q, DELTA_POLL) : false),
+    retry: false,
+    staleTime: 0,
+  });
+
+  useRefreshWhenFocused(deltaSupported ? changes : query);
   return query;
 }
 

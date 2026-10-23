@@ -40,7 +40,8 @@ export default function InboxTab() {
   const query = useConversations({ status: filter === 'open' ? 'open' : undefined, search });
   const { data, isLoading, isError, error, refetch, isRefetching, fetchNextPage, hasNextPage, isFetchingNextPage } = query;
 
-  const all = useMemo(() => data?.pages.flatMap((p) => p.conversations) ?? [], [data]);
+  // A chat can move from one page to another between two loads, so show each chat once.
+  const all = useMemo(() => [...new Map((data?.pages.flatMap((p) => p.conversations) ?? []).map((c) => [c.id, c])).values()], [data]);
   // Agents are read from the chats loaded so far (the same way the web app builds its dropdown).
   const agents = useMemo(() => [...new Set(all.map((c) => c.assigned_agent?.name).filter(Boolean))].sort(), [all]);
 

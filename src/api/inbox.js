@@ -5,6 +5,10 @@ import { request } from './client';
 export const listConversations = ({ status, search, sort, page = 1, perPage = 25 } = {}) =>
   request('/whatsapp/conversations', { params: { status, search, sort, page, per_page: perPage } });
 
+// Only the chats that changed after `since` (the server_time of the last answer; leave it out to just get the clock).
+// -> { conversations, has_more, server_time }. 404 on servers without the "changes" endpoint.
+export const listConversationChanges = (since) => request('/whatsapp/conversations/changes', { params: { since } });
+
 // Newest first. `cursor` is the opaque `next_cursor` from the previous page.
 // -> { messages, next_cursor, has_more }
 export const listMessages = (conversationId, { cursor, perPage = 30 } = {}) =>

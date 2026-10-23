@@ -43,3 +43,6 @@ yarn-error.*
 # Firebase / Google service-account keys (never commit; google-services.json is fine)
 *-firebase-adminsdk-*.json
 service-account*.json
+
+# Backend update bundles handed over by hand (copied into the Laravel project, not part of the app)
+docs/*.zip
